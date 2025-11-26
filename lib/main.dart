@@ -2,45 +2,77 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:masjid_sabilillah/core/constants/app_colors.dart';
 import 'package:masjid_sabilillah/core/providers/theme_provider.dart';
+import 'package:masjid_sabilillah/core/providers/auth_provider.dart';
 import 'package:masjid_sabilillah/presentation/screens/home_screen.dart';
 import 'package:masjid_sabilillah/presentation/screens/prayer_times_screen.dart';
 import 'package:masjid_sabilillah/presentation/screens/settings_screen.dart';
-// import 'package:masjid_sabilillah/presentation/screens/location_screen.dart';
+import 'package:masjid_sabilillah/presentation/screens/login_screen.dart';
+import 'package:masjid_sabilillah/presentation/screens/register_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Load environment variables
+  await dotenv.load(fileName: '.env');
+
+  // Initialize Supabase
+  await Supabase.initialize(
+    url: dotenv.env['SUPABASE_URL'] ?? '',
+    anonKey: dotenv.env['SUPABASE_ANON_KEY'] ?? '',
+  );
+
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => ThemeProvider(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+      ],
       child: const MyApp(),
     ),
   );
 }
 
-final GoRouter _router = GoRouter(
-  routes: [
-    GoRoute(path: '/', builder: (context, state) => const HomeScreen()),
-    GoRoute(
-      path: '/jadwal',
-      builder: (context, state) => const PrayerTimesScreen(),
+GoRouter _createRouter(bool isLoggedIn) {
+  return GoRouter(
+    initialLocation: isLoggedIn ? '/' : '/login',
+    routes: [
+      GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
+      GoRoute(
+        path: '/register',
+        builder: (context, state) => const RegisterScreen(),
+      ),
+      GoRoute(path: '/', builder: (context, state) => const HomeScreen()),
+      GoRoute(
+        path: '/jadwal',
+        builder: (context, state) => const PrayerTimesScreen(),
+      ),
+      GoRoute(
+        path: '/lokasi',
+        builder: (context, state) => const LokasiScreen(),
+      ),
+      GoRoute(
+        path: '/donasi',
+        builder: (context, state) => const DonasiScreen(),
+      ),
+      GoRoute(
+        path: '/pengumuman',
+        builder: (context, state) => const PengumumanScreen(),
+      ),
+      GoRoute(
+        path: '/pengaturan',
+        builder: (context, state) => const SettingsScreen(),
+      ),
+    ],
+    errorBuilder: (context, state) => Scaffold(
+      appBar: AppBar(title: const Text('Error')),
+      body: Center(child: Text('Route tidak ditemukan: ${state.uri}')),
     ),
-    GoRoute(path: '/lokasi', builder: (context, state) => const LokasiScreen()),
-    GoRoute(path: '/donasi', builder: (context, state) => const DonasiScreen()),
-    GoRoute(
-      path: '/pengumuman',
-      builder: (context, state) => const PengumumanScreen(),
-    ),
-    GoRoute(
-      path: '/pengaturan',
-      builder: (context, state) => const SettingsScreen(),
-    ),
-  ],
-  errorBuilder: (context, state) => Scaffold(
-    appBar: AppBar(title: const Text('Error')),
-    body: Center(child: Text('Route tidak ditemukan: ${state.uri}')),
-  ),
-);
+  );
+}
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -85,10 +117,10 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<ThemeProvider>(
-      builder: (context, themeProvider, child) {
+    return Consumer2<ThemeProvider, AuthProvider>(
+      builder: (context, themeProvider, authProvider, child) {
         return MaterialApp.router(
-          routerConfig: _router,
+          routerConfig: _createRouter(authProvider.isLoggedIn),
           title: 'Masjid Sabilillah',
           debugShowCheckedModeBanner: false,
           theme: _buildLightTheme(),
@@ -102,7 +134,7 @@ class MyApp extends StatelessWidget {
   }
 }
 
-// Placeholder screens (hapus setelah buat aslinya)
+// Placeholder screens
 class DonasiScreen extends StatelessWidget {
   const DonasiScreen({super.key});
   @override

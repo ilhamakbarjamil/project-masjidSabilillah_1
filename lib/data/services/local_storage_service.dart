@@ -20,4 +20,14 @@ class LocalStorageService {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getBool('is_dark_theme') ?? false;
   }
+
+  Future<void> saveLoginStatus(bool isLoggedIn) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('is_logged_in', isLoggedIn);
+  }
+
+  Future<bool> getLoginStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('is_logged_in') ?? false;
+  }
 }
