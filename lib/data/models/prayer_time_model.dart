@@ -1,4 +1,3 @@
-// lib/data/models/prayer_time_model.dart
 class PrayerTime {
   final String subuh;
   final String dzuhur;
@@ -16,26 +15,7 @@ class PrayerTime {
     required this.tanggal,
   });
 
-  factory PrayerTime.fromJson(Map<String, dynamic> json) {
-    final data = json['data'];
-    final timings = data['timings'];
-    final date = data['date']['gregorian']['date'];
-
-    return PrayerTime(
-      tanggal: date,
-      subuh: _cleanTime(timings['Fajr']),
-      dzuhur: _cleanTime(timings['Dhuhr']),
-      ashar: _cleanTime(timings['Asr']),
-      maghrib: _cleanTime(timings['Maghrib']),
-      isya: _cleanTime(timings['Isha']),
-    );
-  }
-
-  // Hapus keterangan seperti "(WIB)"
-  static String _cleanTime(String time) {
-    return time.split(' ')[0]; // Ambil bagian sebelum spasi
-  }
-
+  // Helper untuk UI
   List<Map<String, String>> get prayerList => [
         {'name': 'Subuh', 'time': subuh},
         {'name': 'Dzuhur', 'time': dzuhur},

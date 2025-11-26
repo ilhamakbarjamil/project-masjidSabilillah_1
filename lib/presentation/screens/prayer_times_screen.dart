@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:masjid_sabilillah/core/constants/app_colors.dart';
 import 'package:masjid_sabilillah/data/models/prayer_time_model.dart';
 import 'package:masjid_sabilillah/data/services/api_service.dart';
+import 'package:masjid_sabilillah/data/services/local_storage_service.dart';
 import 'package:masjid_sabilillah/presentation/widgets/common/blue_card.dart';
 
 class PrayerTimesScreen extends StatelessWidget {
@@ -11,11 +12,17 @@ class PrayerTimesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Ambil kota dari penyimpanan lokal
+    final futurePrayer = () async {
+      final city = await LocalStorageService().getCity();
+      return ApiService().getPrayerTimes(city: city);
+    }();
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Jadwal Sholat'),
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+        foregroundColor: Theme.of(context).appBarTheme.foregroundColor,
         actions: [
           IconButton(
             onPressed: () => context.go('/'), // Kembali ke Home
@@ -24,33 +31,27 @@ class PrayerTimesScreen extends StatelessWidget {
         ],
       ),
       body: FutureBuilder<PrayerTime>(
-        future: ApiService().getPrayerTimes(city: 'Surabaya'),
+        future: futurePrayer,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(color: AppColors.primary),
-            );
+            return const Center(child: CircularProgressIndicator(color: AppColors.lightPrimary));
           } else if (snapshot.hasError) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.error, color: AppColors.primary, size: 60),
+                  const Icon(Icons.error, color: AppColors.lightPrimary, size: 60),
                   const SizedBox(height: 16),
                   Text(
                     'Gagal memuat jadwal sholat',
-                    style: TextStyle(color: AppColors.primary, fontSize: 16),
+                    style: TextStyle(color: AppColors.lightPrimary, fontSize: 16),
                   ),
                   const SizedBox(height: 16),
                   ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                    ),
+                    style: ElevatedButton.styleFrom(backgroundColor: AppColors.lightPrimary),
                     onPressed: () => Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(
-                        builder: (_) => const PrayerTimesScreen(),
-                      ),
+                      MaterialPageRoute(builder: (_) => const PrayerTimesScreen()),
                     ),
                     child: const Text('Coba Lagi'),
                   ),
@@ -59,18 +60,19 @@ class PrayerTimesScreen extends StatelessWidget {
             );
           } else if (snapshot.hasData) {
             final prayer = snapshot.data!;
-            final prayerList = prayer.prayerList; // Gunakan fungsi helper
+            final prayerList = prayer.prayerList;
 
             return Padding(
               padding: const EdgeInsets.all(16),
-              child: ListView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     'Hari ini: ${prayer.tanggal}',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.primary,
+                      color: Theme.of(context).colorScheme.primary,
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -82,19 +84,11 @@ class PrayerTimesScreen extends StatelessWidget {
                         children: [
                           Text(
                             item['name']!,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.black87,
-                            ),
+                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                           ),
                           Text(
                             item['time']!,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.primary,
-                            ),
+                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                           ),
                         ],
                       ),

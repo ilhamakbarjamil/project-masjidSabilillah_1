@@ -1,6 +1,5 @@
 // lib/presentation/widgets/common/blue_card.dart
 import 'package:flutter/material.dart';
-import 'package:masjid_sabilillah/core/constants/app_colors.dart';
 
 class BlueCard extends StatelessWidget {
   final Widget child;
@@ -10,22 +9,26 @@ class BlueCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final primaryColor = Theme.of(context).colorScheme.primary;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
+          color: Theme.of(context).brightness == Brightness.dark
+              ? Theme.of(context).colorScheme.surface
+              : Colors.white,
+          borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
             ),
           ],
-          border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+          border: Border.all(color: primaryColor.withOpacity(0.2)),
         ),
         child: child,
       ),
