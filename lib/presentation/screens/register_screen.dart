@@ -38,7 +38,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     try {
       final authProvider = context.read<AuthProvider>();
-      
+
       // Register user ke Supabase
       await authProvider.register(
         _emailController.text.trim(),
@@ -65,6 +65,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     final primaryColor = Theme.of(context).colorScheme.primary;
+    final authProvider = context.watch<AuthProvider>();
+    final isInitializing = authProvider.isInitializing;
 
     return Scaffold(
       body: Stack(
@@ -243,7 +245,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
-                            onPressed: _isLoading ? null : _register,
+                            onPressed: (_isLoading || isInitializing) ? null : _register,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: primaryColor,
                               padding: const EdgeInsets.symmetric(vertical: 16),
@@ -251,17 +253,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 borderRadius: BorderRadius.circular(12),
                               ),
                             ),
-                            child: _isLoading
-                                ? const CircularProgressIndicator(
-                                    color: Colors.white,
-                                  )
-                                : const Text(
-                                    'Daftar',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
+                            child: isInitializing
+                                ? const Text('Menyiapkan layanan...')
+                                : (_isLoading
+                                    ? const CircularProgressIndicator(
+                                        color: Colors.white,
+                                      )
+                                    : const Text(
+                                        'Daftar',
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      )),
                           ),
                         ),
 

@@ -52,6 +52,8 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final primaryColor = Theme.of(context).colorScheme.primary;
+    final authProvider = context.watch<AuthProvider>();
+    final isInitializing = authProvider.isInitializing;
 
     return Scaffold(
       body: Stack(
@@ -183,10 +185,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       const SizedBox(height: 24),
 
                       // Tombol Login
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: _isLoading ? null : _login,
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: (_isLoading || isInitializing) ? null : _login,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: primaryColor,
                             padding: const EdgeInsets.symmetric(vertical: 16),
@@ -194,17 +196,19 @@ class _LoginScreenState extends State<LoginScreen> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          child: _isLoading
+                                child: isInitializing
+                                    ? const Text('Menyiapkan layanan...')
+                                    : (_isLoading
                               ? const CircularProgressIndicator(
                                   color: Colors.white,
                                 )
-                              : const Text(
-                                  'Login',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
+                                    : const Text(
+                                        'Login',
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      )),
                         ),
                       ),
 
@@ -244,9 +248,11 @@ class _LoginScreenState extends State<LoginScreen> {
                       SizedBox(
                         width: double.infinity,
                         child: OutlinedButton(
-                          onPressed: () {
-                            context.go('/register');
-                          },
+                          onPressed: isInitializing
+                              ? null
+                              : () {
+                                  context.go('/register');
+                                },
                           style: OutlinedButton.styleFrom(
                             foregroundColor: primaryColor,
                             side: BorderSide(color: primaryColor, width: 2),

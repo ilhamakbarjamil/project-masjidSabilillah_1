@@ -45,7 +45,10 @@ dev_dependencies:
   
   # Modul 3 & 5: API & Lokasi
   http: ^1.2.0
-  geolocator: ^10.1.0
+  # geolocator: ^10.1.0
+  # Temporarily disabled geolocator to isolate startup performance issues
+  # If you need location features, re-enable and refactor initialization so the
+  # plugin is not forced to start a foreground service during app startup.
 
   # Modul 4: Penyimpanan Lokal
   shared_preferences: ^2.2.2

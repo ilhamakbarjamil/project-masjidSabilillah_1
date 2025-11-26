@@ -2,8 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:masjid_sabilillah/core/constants/app_colors.dart';
 import 'package:masjid_sabilillah/core/providers/theme_provider.dart';
 import 'package:masjid_sabilillah/core/providers/auth_provider.dart';
@@ -15,15 +13,15 @@ import 'package:masjid_sabilillah/presentation/screens/register_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  debugPrint('main: start initialization');
 
   // Load environment variables
-  await dotenv.load(fileName: '.env');
 
   // Initialize Supabase
-  await Supabase.initialize(
-    url: dotenv.env['SUPABASE_URL'] ?? '',
-    anonKey: dotenv.env['SUPABASE_ANON_KEY'] ?? '',
-  );
+  // Do NOT perform long async initialization (dotenv / Supabase) here before runApp.
+  // Move initialization into a provider (AuthProvider) so the first Flutter frame
+  // can be rendered quickly and we can show a loading UI while services initialize.
+  debugPrint('main: starting app (deferred Supabase/dotenv init to provider)');
 
   runApp(
     MultiProvider(
@@ -119,6 +117,25 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer2<ThemeProvider, AuthProvider>(
       builder: (context, themeProvider, authProvider, child) {
+        final isInitializing =
+            themeProvider.isInitializing || authProvider.isInitializing;
+
+        if (isInitializing) {
+          // Tampilkan loading sederhana selama provider inisialisasi
+          return MaterialApp(
+            title: 'Masjid Sabilillah',
+            debugShowCheckedModeBanner: false,
+            theme: _buildLightTheme(),
+            darkTheme: _buildDarkTheme(),
+            themeMode: themeProvider.isDarkMode
+                ? ThemeMode.dark
+                : ThemeMode.light,
+            home: const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            ),
+          );
+        }
+
         return MaterialApp.router(
           routerConfig: _createRouter(authProvider.isLoggedIn),
           title: 'Masjid Sabilillah',
