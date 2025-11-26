@@ -1,7 +1,8 @@
 // lib/presentation/screens/settings_screen.dart
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:masjid_sabilillah/data/services/local_storage_service.dart';
+import 'package:provider/provider.dart';
+import 'package:masjid_sabilillah/core/providers/theme_provider.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -13,7 +14,7 @@ class SettingsScreen extends StatelessWidget {
         title: const Text('Pengaturan'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
+          onPressed: () => context.go('/'),
         ),
       ),
       body: Padding(
@@ -26,19 +27,13 @@ class SettingsScreen extends StatelessWidget {
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
-            FutureBuilder<bool>(
-              future: LocalStorageService().getTheme(),
-              builder: (context, snapshot) {
-                final isDark = snapshot.data ?? false;
+            Consumer<ThemeProvider>(
+              builder: (context, themeProvider, _) {
                 return SwitchListTile(
                   title: const Text('Tema Gelap'),
-                  value: isDark,
-                  onChanged: (bool? value) async {
-                    if (value == null) return;
-                    await LocalStorageService().saveTheme(value);
-                    if (!context.mounted) return;
-                    // Refresh seluruh aplikasi
-                    context.go('/');
+                  value: themeProvider.isDarkMode,
+                  onChanged: (bool value) {
+                    themeProvider.toggleTheme(value);
                   },
                 );
               },

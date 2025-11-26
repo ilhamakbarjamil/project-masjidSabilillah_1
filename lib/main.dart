@@ -1,15 +1,21 @@
 // lib/main.dart
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import 'package:masjid_sabilillah/core/constants/app_colors.dart';
-import 'package:masjid_sabilillah/data/services/local_storage_service.dart';
+import 'package:masjid_sabilillah/core/providers/theme_provider.dart';
 import 'package:masjid_sabilillah/presentation/screens/home_screen.dart';
 import 'package:masjid_sabilillah/presentation/screens/prayer_times_screen.dart';
 import 'package:masjid_sabilillah/presentation/screens/settings_screen.dart';
 // import 'package:masjid_sabilillah/presentation/screens/location_screen.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => ThemeProvider(),
+      child: const MyApp(),
+    ),
+  );
 }
 
 final GoRouter _router = GoRouter(
@@ -79,18 +85,17 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<bool>(
-      future: LocalStorageService().getTheme(),
-      builder: (context, snapshot) {
-        final isDark = snapshot.data ?? false;
-
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
         return MaterialApp.router(
           routerConfig: _router,
           title: 'Masjid Sabilillah',
           debugShowCheckedModeBanner: false,
           theme: _buildLightTheme(),
           darkTheme: _buildDarkTheme(),
-          themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
+          themeMode: themeProvider.isDarkMode
+              ? ThemeMode.dark
+              : ThemeMode.light,
         );
       },
     );
