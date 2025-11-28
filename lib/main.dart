@@ -4,12 +4,13 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:masjid_sabilillah/core/constants/app_colors.dart';
 import 'package:masjid_sabilillah/core/providers/theme_provider.dart';
+import 'package:masjid_sabilillah/presentation/screens/splash_screen.dart';
+import 'package:masjid_sabilillah/presentation/screens/login_screen.dart';
+import 'package:masjid_sabilillah/presentation/screens/signup_screen.dart';
 import 'package:masjid_sabilillah/presentation/screens/home_screen.dart';
-import 'package:masjid_sabilillah/presentation/screens/prayer_times_screen.dart';
-import 'package:masjid_sabilillah/presentation/screens/settings_screen.dart';
-// import 'package:masjid_sabilillah/presentation/screens/location_screen.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(
     ChangeNotifierProvider(
       create: (_) => ThemeProvider(),
@@ -19,69 +20,19 @@ void main() {
 }
 
 final GoRouter _router = GoRouter(
+  initialLocation: '/splash',
   routes: [
+    GoRoute(path: '/splash', builder: (context, state) => const SplashScreen()),
+    GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
+    GoRoute(path: '/signup', builder: (context, state) => const SignupScreen()),
     GoRoute(path: '/', builder: (context, state) => const HomeScreen()),
-    GoRoute(
-      path: '/jadwal',
-      builder: (context, state) => const PrayerTimesScreen(),
-    ),
-    GoRoute(path: '/lokasi', builder: (context, state) => const LokasiScreen()),
-    GoRoute(path: '/donasi', builder: (context, state) => const DonasiScreen()),
-    GoRoute(
-      path: '/pengumuman',
-      builder: (context, state) => const PengumumanScreen(),
-    ),
-    GoRoute(
-      path: '/pengaturan',
-      builder: (context, state) => const SettingsScreen(),
-    ),
   ],
-  errorBuilder: (context, state) => Scaffold(
-    appBar: AppBar(title: const Text('Error')),
-    body: Center(child: Text('Route tidak ditemukan: ${state.uri}')),
-  ),
+  // 🔥 HAPUS BAGIAN INI (redirect logic yang mengakses Supabase)
+  // redirect: (context, state) async { ... },
 );
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
-  ThemeData _buildLightTheme() {
-    return ThemeData(
-      useMaterial3: true,
-      brightness: Brightness.light,
-      colorScheme: ColorScheme.light(
-        primary: AppColors.lightPrimary,
-        onPrimary: AppColors.lightTextOnPrimary,
-        background: AppColors.lightBackground,
-        surface: AppColors.lightSurface,
-        onBackground: AppColors.lightTextPrimary,
-      ),
-      scaffoldBackgroundColor: AppColors.lightBackground,
-      appBarTheme: AppBarTheme(
-        backgroundColor: AppColors.lightPrimary,
-        foregroundColor: AppColors.lightTextOnPrimary,
-      ),
-    );
-  }
-
-  ThemeData _buildDarkTheme() {
-    return ThemeData(
-      useMaterial3: true,
-      brightness: Brightness.dark,
-      colorScheme: ColorScheme.dark(
-        primary: AppColors.darkPrimary,
-        onPrimary: AppColors.lightTextOnPrimary,
-        background: AppColors.darkBackground,
-        surface: AppColors.darkSurface,
-        onBackground: AppColors.darkTextPrimary,
-      ),
-      scaffoldBackgroundColor: AppColors.darkBackground,
-      appBarTheme: AppBarTheme(
-        backgroundColor: AppColors.darkSurface,
-        foregroundColor: AppColors.lightTextOnPrimary,
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -91,41 +42,42 @@ class MyApp extends StatelessWidget {
           routerConfig: _router,
           title: 'Masjid Sabilillah',
           debugShowCheckedModeBanner: false,
-          theme: _buildLightTheme(),
-          darkTheme: _buildDarkTheme(),
-          themeMode: themeProvider.isDarkMode
-              ? ThemeMode.dark
-              : ThemeMode.light,
+          theme: ThemeData.light().copyWith(
+            colorScheme: ColorScheme.light(primary: AppColors.lightPrimary),
+          ),
+          darkTheme: ThemeData.dark().copyWith(
+            colorScheme: ColorScheme.dark(primary: AppColors.darkPrimary),
+          ),
+          themeMode: themeProvider.isDarkMode ? ThemeMode.dark : ThemeMode.light,
         );
       },
     );
   }
 }
 
-// Placeholder screens (hapus setelah buat aslinya)
-class DonasiScreen extends StatelessWidget {
-  const DonasiScreen({super.key});
-  @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Donasi')),
-    body: const Center(child: Text('Donasi')),
-  );
-}
+// Placeholder HomeScreen
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key});
 
-class PengumumanScreen extends StatelessWidget {
-  const PengumumanScreen({super.key});
   @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Pengumuman')),
-    body: const Center(child: Text('Pengumuman')),
-  );
-}
-
-class LokasiScreen extends StatelessWidget {
-  const LokasiScreen({super.key});
-  @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Lokasi Masjid')),
-    body: const Center(child: Text('Lokasi')),
-  );
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Home')),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text('Anda sudah login!'),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (_) => const LoginScreen()),
+              ),
+              child: const Text('Logout'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
