@@ -9,7 +9,7 @@ import 'package:masjid_sabilillah/presentation/screens/login_screen.dart';
 import 'package:masjid_sabilillah/presentation/screens/signup_screen.dart';
 import 'package:masjid_sabilillah/presentation/screens/home_screen.dart';
 import 'package:masjid_sabilillah/presentation/screens/prayer_times_screen.dart';
-// import 'package:masjid_sabilillah/presentation/screens/location_screen.dart';
+import 'package:masjid_sabilillah/presentation/screens/location_screen.dart';
 // import 'package:masjid_sabilillah/presentation/screens/donasi_screen.dart';
 // import 'package:masjid_sabilillah/presentation/screens/pengumuman_screen.dart';
 import 'package:masjid_sabilillah/presentation/screens/settings_screen.dart';
@@ -35,7 +35,7 @@ final GoRouter _router = GoRouter(
       path: '/jadwal',
       builder: (context, state) => const PrayerTimesScreen(),
     ),
-    // GoRoute(path: '/lokasi', builder: (context, state) => const LocationScreen()),
+    GoRoute(path: '/lokasi', builder: (context, state) => const LocationScreen()),
     // GoRoute(path: '/donasi', builder: (context, state) => const DonasiScreen()),
     // GoRoute(path: '/pengumuman', builder: (context, state) => const PengumumanScreen()),
     GoRoute(

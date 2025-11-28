@@ -48,7 +48,9 @@ dev_dependencies:
   
   # Modul 3 & 5: API & Lokasi
   http: ^1.2.0
-  geolocator: ^10.1.0
+  geolocator: ^9.0.2
+  get: ^4.6.6
+  google_maps_flutter: ^2.5.0
 
   # Modul 4: Penyimpanan Lokal
   shared_preferences: ^2.2.2
