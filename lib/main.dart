@@ -8,6 +8,11 @@ import 'package:masjid_sabilillah/presentation/screens/splash_screen.dart';
 import 'package:masjid_sabilillah/presentation/screens/login_screen.dart';
 import 'package:masjid_sabilillah/presentation/screens/signup_screen.dart';
 import 'package:masjid_sabilillah/presentation/screens/home_screen.dart';
+import 'package:masjid_sabilillah/presentation/screens/prayer_times_screen.dart';
+// import 'package:masjid_sabilillah/presentation/screens/location_screen.dart';
+// import 'package:masjid_sabilillah/presentation/screens/donasi_screen.dart';
+// import 'package:masjid_sabilillah/presentation/screens/pengumuman_screen.dart';
+import 'package:masjid_sabilillah/presentation/screens/settings_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,9 +31,18 @@ final GoRouter _router = GoRouter(
     GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
     GoRoute(path: '/signup', builder: (context, state) => const SignupScreen()),
     GoRoute(path: '/', builder: (context, state) => const HomeScreen()),
+    GoRoute(
+      path: '/jadwal',
+      builder: (context, state) => const PrayerTimesScreen(),
+    ),
+    // GoRoute(path: '/lokasi', builder: (context, state) => const LocationScreen()),
+    // GoRoute(path: '/donasi', builder: (context, state) => const DonasiScreen()),
+    // GoRoute(path: '/pengumuman', builder: (context, state) => const PengumumanScreen()),
+    GoRoute(
+      path: '/pengaturan',
+      builder: (context, state) => const SettingsScreen(),
+    ),
   ],
-  // 🔥 HAPUS BAGIAN INI (redirect logic yang mengakses Supabase)
-  // redirect: (context, state) async { ... },
 );
 
 class MyApp extends StatelessWidget {
@@ -38,6 +52,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<ThemeProvider>(
       builder: (context, themeProvider, child) {
+        if (!themeProvider.isInitialized) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
         return MaterialApp.router(
           routerConfig: _router,
           title: 'Masjid Sabilillah',
@@ -48,36 +67,11 @@ class MyApp extends StatelessWidget {
           darkTheme: ThemeData.dark().copyWith(
             colorScheme: ColorScheme.dark(primary: AppColors.darkPrimary),
           ),
-          themeMode: themeProvider.isDarkMode ? ThemeMode.dark : ThemeMode.light,
+          themeMode: themeProvider.isDarkMode
+              ? ThemeMode.dark
+              : ThemeMode.light,
         );
       },
-    );
-  }
-}
-
-// Placeholder HomeScreen
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Home')),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text('Anda sudah login!'),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () => Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (_) => const LoginScreen()),
-              ),
-              child: const Text('Logout'),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

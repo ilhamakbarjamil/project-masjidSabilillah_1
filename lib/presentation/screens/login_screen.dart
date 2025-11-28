@@ -25,10 +25,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _initializeSupabaseIfNeeded() async {
     try {
-      // Cek apakah Supabase sudah terinisialisasi
+      // Coba akses client untuk cek apakah sudah terinisialisasi
       await Supabase.instance.client.rpc('ping');
     } catch (e) {
-      // Jika belum, initialize di sini
       try {
         await dotenv.load(fileName: ".env");
         final url = dotenv.env['SUPABASE_URL'];
@@ -62,6 +61,7 @@ class _LoginScreenState extends State<LoginScreen> {
         password: _passwordController.text.trim(),
       );
 
+      // ✅ Redirect ke HOME SCREEN setelah login berhasil
       if (context.mounted) {
         context.go('/');
       }
@@ -113,9 +113,12 @@ class _LoginScreenState extends State<LoginScreen> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _login,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                  ),
                   child: _isLoading
                       ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text('Login'),
+                      : const Text('Login', style: TextStyle(color: Colors.white)),
                 ),
               ),
               TextButton(
