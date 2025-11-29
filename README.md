@@ -1,99 +1,77 @@
 # Location Tracking Experiments
 
-Aplikasi Flutter untuk eksperimen tracking lokasi dengan Network dan GPS provider menggunakan arsitektur modular dengan GetX.
+Aplikasi Flutter untuk eksperimen tracking lokasi menggunakan provider Network dan GPS. Solusi ini mengadopsi arsitektur modular (service, controller, view), state management GetX, dan visualisasi real-time dengan FlutterMap + OpenStreetMap.
 
-## Fitur
+## Fitur Utama
 
-- **Live Location Tracking** - Real-time tracking dengan stream location updates
-- **Network Location** - Provider network dengan akurasi rendah
-- **GPS Location** - Provider GPS dengan akurasi tinggi
-- **FlutterMap + OpenStreetMap** - Visualisasi peta interaktif
-- **GetX State Management** - Manajemen state yang efisien
-- **Arsitektur Modular** - Service, Controller, View terpisah
+- **Live Real-time Tracking (Network & GPS)**: Lokasi terus diperbarui otomatis hingga pengguna menekan Stop.
+- **Auto-follow Map**: Peta otomatis mengikuti pergerakan lokasi terkini.
+- **Statistik Lengkap**: Jarak tempuh, kecepatan (km/h), update rate, time-to-fix, dan durasi tracking.
+- **Pause/Resume**: Tracking dapat dijeda tanpa menghapus data atau path yang telah terekam.
+- **Switch Provider**: Bisa berpindah mode (Network/GPS) tanpa kehilangan histori pergerakan.
+- **Optimasi Memory**: Jumlah riwayat path dibatasi agar performa tetap ringan.
+- **UI Modern**: Marker dan jalur halus dengan visualisasi jelas.
+- **Catatan**: Mode eksperimen statis (diam, bebas di mana saja)
+- **Aplikasi akan menyesuaikan hasil tergantung posisi pengguna (indoor/outdoor)**
+
+## Perbedaan Network vs GPS
+
+| Provider | Kelebihan | Kekurangan | Use Case |   
+|----------|-----------|------------|----------|   
+| **Network** | Cepat respons, tidak selalu butuh GPS, lebih hemat baterai. Coverage lebih baik indoor (asal ada WiFi/BTS). | Akurasi rendah (10-100 meter, bisa lebih). Dipengaruhi kualitas sinyal seluler/WiFi. | Lokasi kasar, aplikasi delivery, penemuan perangkat, tracking kasar saat bergerak cepat.
+| **GPS** | Akurasi tinggi (1-10 meter), cocok eksperimen presisi, rute/jalur/jarak. | Lambat time-to-fix (butuh waktu "menangkap" satelit), boros baterai, bisa gagal indoor/gedung tebal/area tertutup. | Navigasi kendaraan, rekam olahraga, eksperimen presisi jalur & akurasi.
+
+### Catatan Penggunaan   
+- **Network**: Cukup aktifkan internet dan izinkan lokasi, langsung mulai. Lebih stabil di dalam gedung/area wifi.
+- **GPS**: Aktifkan GPS, keluar gedung untuk fix lebih cepat/akurat. Cocok untuk tracking di lapangan luas.
+- Pengguna bisa langsung berpindah mode di halaman real-time untuk membandingkan jalur, respons, dan kehalusan path.
+- Tracking akan terus berjalan dan terus update hingga Anda menekan tombol Stop.
 
 ## Eksperimen
 
-### Eksperimen 1: Outdoor (Statis)
-- Catat lokasi di luar ruangan
-- Bandingkan Network vs GPS
-- Data yang dicatat: latitude, longitude, accuracy, timestamp
+### Eksperimen 1 & 2: Statis
+- Tidak ada UI pemilihan indoor/outdoor; lakukan eksperimen di mana saja.
+- Catat lokasi Network dan GPS, lalu bandingkan.
+- Cocok untuk menguji selisih akurasi di dalam vs luar ruangan.
 
-### Eksperimen 2: Indoor (Statis)
-- Catat lokasi di dalam ruangan
-- Bandingkan Network vs GPS dalam kondisi indoor
-- Analisis perbedaan akurasi
-
-### Eksperimen 3: Bergerak (Real-time)
-- Live tracking saat bergerak
-- Mode Network dan GPS
-- Observasi:
-  - Pergerakan marker (halus/melompat)
-  - Kecepatan update
-  - Respons posisi pertama
-  - Jalur yang terbentuk
+### Eksperimen 3: Bergerak (Live Real-time Tracking)
+- Tracking berjalan terus (interval optimal: network ~2 detik, GPS ~1 detik), marker dan jalur bergerak mengikuti posisi user.
+- Mode bisa diganti kapan saja tanpa kehilangan data/history.
+- Uji jalur, update rate, time-to-fix, serta kehalusan marker di map.
 
 ## Struktur Proyek
 
 ```
 lib/
-├── controllers/          # GetX Controllers
-│   ├── location_controller.dart
-│   └── experiment_controller.dart
-├── models/              # Data Models
-│   └── location_data.dart
-├── services/            # Business Logic
-│   └── location_service.dart
-├── views/               # UI Screens
-│   ├── home_view.dart
-│   ├── outdoor_experiment_view.dart
-│   ├── indoor_experiment_view.dart
-│   └── moving_experiment_view.dart
-├── widgets/             # Reusable Widgets
-│   └── location_map.dart
+├── controllers/
+│    ├── location_controller.dart
+│    └── experiment_controller.dart
+├── models/
+│    └── location_data.dart
+├── services/
+│    └── location_service.dart
+├── views/
+│    ├── home_view.dart
+│    ├── static_experiment_view.dart
+│    └── moving_experiment_view.dart
+├── widgets/
+│    └── location_map.dart
 └── main.dart
 ```
 
 ## Dependencies
-
-- `geolocator` - Location services
-- `permission_handler` - Permission management
-- `get` - State management
-- `flutter_map` - Map widget
-- `latlong2` - Lat/Lng calculations
-- `intl` - Date formatting
+- `geolocator`, `permission_handler`, `get`, `flutter_map`, `latlong2`, `intl`
 
 ## Setup
-
-1. Install dependencies:
-```bash
-flutter pub get
-```
-
-2. Untuk Android, permissions sudah ditambahkan di `AndroidManifest.xml`
-
-3. Untuk iOS, permissions sudah ditambahkan di `Info.plist`
-
-4. Run aplikasi:
-```bash
-flutter run
-```
+1. Jalankan: `flutter pub get`
+2. Permissions lokasi sudah lengkap di Android/iOS
+3. Mulai: `flutter run`
 
 ## Penggunaan
+1. Pilih eksperimen Statis (diam) atau Bergerak (live tracking)
+2. Mode Statis: Catat lokasi Network/GPS dengan posisi yang Anda inginkan
+3. Mode Bergerak: Tracking terus real-time hingga ditekan Stop (bisa pindah Network-GPS tanpa reset data)
 
-1. Buka aplikasi dan pilih eksperimen yang ingin dilakukan
-2. Untuk eksperimen statis (Outdoor/Indoor):
-   - Tekan "Record Network" untuk mencatat lokasi dengan network provider
-   - Tekan "Record GPS" untuk mencatat lokasi dengan GPS provider
-   - Bandingkan hasil yang ditampilkan
-3. Untuk eksperimen bergerak:
-   - Pilih mode Network atau GPS
-   - Aplikasi akan mulai tracking secara real-time
-   - Amati pergerakan marker di peta
-   - Tekan "Stop" untuk menghentikan tracking
-
-## Catatan
-
-- Pastikan GPS dan Internet aktif untuk hasil terbaik
-- GPS memerlukan waktu untuk mendapatkan fix pertama (Time to First Fix)
-- Network location lebih cepat tapi kurang akurat
-- GPS lebih akurat tapi membutuhkan waktu lebih lama dan sinyal satelit yang baik
+## Catatan Tambahan
+- Pengukuran akurasi serta kelambatan/kelembutan pergerakan marker sangat dipengaruhi kualitas provider (Network/GPS), kekuatan sinyal, dan lokasi fisik pengguna.
+- Cobalah berpindah (indoor/outdoor) dan bandingkan hasil masing-masing provider!
