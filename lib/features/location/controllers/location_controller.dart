@@ -2,11 +2,11 @@ import 'package:get/get.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import '../../../core/services/location_service.dart';
-import 'dart:async'; 
+import 'dart:async';
 
 class LocationController extends GetxController {
   final LocationService _locationService = LocationService();
-  
+
   var currentPosition = Position(
     latitude: -7.5232396,
     longitude: 112.3511687,
@@ -19,7 +19,7 @@ class LocationController extends GetxController {
     headingAccuracy: 0,
     speedAccuracy: 0,
   ).obs;
-  
+
   var isLoading = false.obs;
   var hasError = false.obs;
   var errorMessage = ''.obs;
@@ -33,11 +33,11 @@ class LocationController extends GetxController {
     try {
       isLoading.value = true;
       hasError.value = false;
-      
+
       final position = await _locationService.getCurrentPosition(
         useGps: isGpsEnabled.value,
       );
-      
+
       currentPosition.value = position;
       mapCenter.value = LatLng(position.latitude, position.longitude);
     } catch (e) {
@@ -50,6 +50,16 @@ class LocationController extends GetxController {
 
   void toggleGps() {
     isGpsEnabled.value = !isGpsEnabled.value;
+
+    // ✅ PASTIKAN isLoading TIDAK TERTAHAN
+    if (isLoading.value) {
+      isLoading.value = false;
+    }
+
+    // ✅ PASTIKAN UI DIPERBARUI
+    update();
+
+    // JIKA SUDAH TRACKING, RESTART DENGAN PROVIDER BARU
     if (isTracking.value) {
       stopTracking();
       startTracking();
@@ -57,16 +67,21 @@ class LocationController extends GetxController {
   }
 
   void startTracking() {
+    // ✅ PASTIKAN TIDAK DALAM KEADAAN LOADING
+    if (isLoading.value) {
+      isLoading.value = false;
+    }
+
     isTracking.value = true;
-    
-    _positionStream = _locationService.getPositionStream(
-      useGps: isGpsEnabled.value,
-    ).listen((position) {
-      if (isTracking.value) {
-        currentPosition.value = position;
-        mapCenter.value = LatLng(position.latitude, position.longitude);
-      }
-    });
+
+    _positionStream = _locationService
+        .getPositionStream(useGps: isGpsEnabled.value)
+        .listen((position) {
+          if (isTracking.value) {
+            currentPosition.value = position;
+            mapCenter.value = LatLng(position.latitude, position.longitude);
+          }
+        });
   }
 
   void stopTracking() {
