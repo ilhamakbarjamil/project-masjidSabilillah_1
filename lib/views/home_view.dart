@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/location_controller.dart';
 import '../controllers/experiment_controller.dart';
-import 'outdoor_experiment_view.dart';
-import 'indoor_experiment_view.dart';
+import 'static_experiment_view.dart';
 import 'moving_experiment_view.dart';
 
 class HomeView extends StatelessWidget {
@@ -33,20 +32,11 @@ class HomeView extends StatelessWidget {
             const SizedBox(height: 20),
             _buildExperimentCard(
               context,
-              'Eksperimen 1: Outdoor (Statis)',
-              'Uji akurasi Network vs GPS di luar ruangan',
-              Icons.park,
+              'Eksperimen 1 & 2: Statis',
+              'Uji akurasi Network vs GPS. Lakukan di posisi Anda saat ini (indoor atau outdoor)',
+              Icons.location_on,
               Colors.green,
-              () => Get.to(() => const OutdoorExperimentView()),
-            ),
-            const SizedBox(height: 16),
-            _buildExperimentCard(
-              context,
-              'Eksperimen 2: Indoor (Statis)',
-              'Uji akurasi Network vs GPS di dalam ruangan',
-              Icons.home,
-              Colors.orange,
-              () => Get.to(() => const IndoorExperimentView()),
+              () => Get.to(() => const StaticExperimentView()),
             ),
             const SizedBox(height: 16),
             _buildExperimentCard(

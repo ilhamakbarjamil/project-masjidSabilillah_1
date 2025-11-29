@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../models/location_data.dart';
@@ -49,16 +50,16 @@ class LocationService {
       if (provider == LocationProvider.network) {
         locationSettings = AndroidSettings(
           accuracy: LocationAccuracy.low,
-          distanceFilter: 10, // meters
+          distanceFilter: 5, // meters - lebih sensitif untuk tracking
           forceLocationManager: false, // Use network provider
-          intervalDuration: const Duration(seconds: 5), // Update every 5 seconds
+          intervalDuration: const Duration(seconds: 2), // Update lebih cepat
         );
       } else {
         locationSettings = AndroidSettings(
           accuracy: LocationAccuracy.high,
-          distanceFilter: 5, // meters
+          distanceFilter: 3, // meters - lebih presisi untuk GPS
           forceLocationManager: true, // Force GPS, don't use network
-          intervalDuration: const Duration(seconds: 3), // Update every 3 seconds
+          intervalDuration: const Duration(seconds: 1), // Update lebih cepat untuk GPS
         );
       }
     } else {
@@ -66,12 +67,12 @@ class LocationService {
       if (provider == LocationProvider.network) {
         locationSettings = AppleSettings(
           accuracy: LocationAccuracy.low,
-          distanceFilter: 10,
+          distanceFilter: 5,
         );
       } else {
         locationSettings = AppleSettings(
           accuracy: LocationAccuracy.best,
-          distanceFilter: 5,
+          distanceFilter: 3,
         );
       }
     }
@@ -83,14 +84,10 @@ class LocationService {
       locationSettings: locationSettings,
     ).listen(
       (Position position) {
-        // Only add if position is fresh (not cached)
-        final now = DateTime.now();
-        final positionTime = position.timestamp;
-        final age = now.difference(positionTime).inSeconds;
-        
-        // Reject positions older than 10 seconds (likely cached)
-        if (age < 10) {
-          _streamController?.add(
+        // Always add position updates - stream akan terus berjalan
+        // Terima semua update dari stream, tidak ada filter karena stream sudah fresh
+        if (_streamController != null && !_streamController!.isClosed) {
+          _streamController!.add(
             LocationData(
               latitude: position.latitude,
               longitude: position.longitude,
@@ -102,9 +99,20 @@ class LocationService {
         }
       },
       onError: (error) {
-        _streamController?.addError(error);
+        // Log error tapi jangan stop stream
+        debugPrint('Location stream error: $error');
+        if (_streamController != null && !_streamController!.isClosed) {
+          _streamController!.addError(error);
+        }
       },
-      cancelOnError: false,
+      cancelOnError: false, // Terus berjalan meski ada error
+      onDone: () {
+        // Stream selesai, tutup controller
+        debugPrint('Location stream done');
+        if (_streamController != null && !_streamController!.isClosed) {
+          _streamController!.close();
+        }
+      },
     );
 
     _locationStream = _streamController!.stream;
@@ -141,10 +149,9 @@ class LocationService {
       }
 
       // Get fresh location, don't use cache
-      // timeLimit ensures we get a fresh location
+      // Settings already configured to get fresh location
       Position position = await Geolocator.getCurrentPosition(
         locationSettings: locationSettings,
-        timeLimit: const Duration(seconds: 15), // Max 15 seconds to get location
       );
 
       // Verify position is fresh (not cached)
@@ -152,12 +159,11 @@ class LocationService {
       final positionTime = position.timestamp;
       final age = now.difference(positionTime).inSeconds;
       
-      // Reject if position is older than 5 seconds
+      // Reject if position is older than 5 seconds and try again
       if (age > 5) {
-        // Try to get a new one
+        // Try to get a new one with fresh settings
         position = await Geolocator.getCurrentPosition(
           locationSettings: locationSettings,
-          timeLimit: const Duration(seconds: 10),
         );
       }
 
@@ -174,12 +180,19 @@ class LocationService {
   }
 
   void stopLocationStream() {
+    // Cancel subscription terlebih dahulu
     _positionSubscription?.cancel();
     _positionSubscription = null;
-    _streamController?.close();
+    
+    // Close stream controller jika masih terbuka
+    if (_streamController != null && !_streamController!.isClosed) {
+      _streamController!.close();
+    }
     _streamController = null;
     _locationStream = null;
     _currentProvider = null;
+    
+    debugPrint('Location stream stopped');
   }
 
   LocationProvider? get currentProvider => _currentProvider;

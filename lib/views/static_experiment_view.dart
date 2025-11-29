@@ -6,8 +6,8 @@ import '../controllers/experiment_controller.dart';
 import '../services/location_service.dart';
 import '../widgets/location_map.dart';
 
-class IndoorExperimentView extends StatelessWidget {
-  const IndoorExperimentView({super.key});
+class StaticExperimentView extends StatelessWidget {
+  const StaticExperimentView({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -16,8 +16,8 @@ class IndoorExperimentView extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Eksperimen 2: Indoor (Statis)'),
-        backgroundColor: Colors.orange,
+        title: const Text('Eksperimen Statis'),
+        backgroundColor: Colors.green,
         foregroundColor: Colors.white,
       ),
       body: Obx(() => SingleChildScrollView(
@@ -42,9 +42,29 @@ class IndoorExperimentView extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Text(
-                    'Catat lokasi untuk Network dan GPS (di dalam ruangan)',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  Card(
+                    color: Colors.blue[50],
+                    child: Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Eksperimen Statis',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          const Text(
+                            'Catat lokasi untuk Network dan GPS.\n'
+                            'Lakukan eksperimen di posisi Anda saat ini (indoor atau outdoor).',
+                            style: TextStyle(fontSize: 14),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 16),
                   
@@ -217,7 +237,7 @@ class IndoorExperimentView extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Perbandingan (Indoor)',
+              'Perbandingan',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
@@ -228,15 +248,9 @@ class IndoorExperimentView extends StatelessWidget {
                 'Difference: ${(gpsAvgAccuracy - networkAvgAccuracy).abs().toStringAsFixed(2)} m',
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
-            const SizedBox(height: 8),
-            const Text(
-              'Catatan: GPS biasanya kurang akurat di dalam ruangan',
-              style: TextStyle(fontStyle: FontStyle.italic, fontSize: 12),
-            ),
           ],
         ),
       ),
     );
   }
 }
-
