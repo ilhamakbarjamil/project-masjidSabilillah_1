@@ -13,6 +13,8 @@ import 'package:masjid_sabilillah/presentation/screens/prayer_times_screen.dart'
 // import 'package:masjid_sabilillah/presentation/screens/donasi_screen.dart';
 // import 'package:masjid_sabilillah/presentation/screens/pengumuman_screen.dart';
 import 'package:masjid_sabilillah/presentation/screens/settings_screen.dart';
+import 'package:masjid_sabilillah/lokasi/views/home_view.dart';
+import 'package:get/get.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -36,6 +38,7 @@ final GoRouter _router = GoRouter(
       builder: (context, state) => const PrayerTimesScreen(),
     ),
     // GoRoute(path: '/lokasi', builder: (context, state) => const LocationScreen()),
+    GoRoute(path: '/lokasi', builder: (context, state) => const HomeView()),
     // GoRoute(path: '/donasi', builder: (context, state) => const DonasiScreen()),
     // GoRoute(path: '/pengumuman', builder: (context, state) => const PengumumanScreen()),
     GoRoute(
