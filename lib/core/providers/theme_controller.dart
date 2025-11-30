@@ -1,4 +1,3 @@
-// lib/core/providers/theme_provider.dart
 import 'package:get/get.dart';
 import 'package:masjid_sabilillah/data/services/local_storage_service.dart';
 

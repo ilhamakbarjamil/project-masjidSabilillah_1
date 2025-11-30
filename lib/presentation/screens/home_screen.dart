@@ -1,8 +1,8 @@
 // lib/presentation/screens/home_screen.dart
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:get/get.dart';
 import 'package:masjid_sabilillah/presentation/widgets/animated/fade_in_widget.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -42,9 +42,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final width = MediaQuery.sizeOf(context).width;
+    final width = Get.width;
     final isTablet = width >= 600;
-    final primaryColor = Theme.of(context).colorScheme.primary;
+    final primaryColor = Get.theme.colorScheme.primary;
 
     return Scaffold(
       body: Stack(
@@ -82,7 +82,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 // Hero Section
                 Container(
                   padding: EdgeInsets.only(
-                    top: MediaQuery.paddingOf(context).top + 40,
+                    top: Get.mediaQuery.padding.top + 40,
                     bottom: 40,
                   ),
                   alignment: Alignment.center,
@@ -158,7 +158,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Column(
                     children: [
                       _buildFeatureCard(
-                        context,
                         icon: Icons.alarm,
                         title: 'Jadwal Sholat',
                         route: '/jadwal',
@@ -167,7 +166,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       const SizedBox(height: 16),
                       _buildFeatureCard(
-                        context,
                         icon: Icons.location_on,
                         title: 'Lokasi Masjid',
                         route: '/lokasi',
@@ -176,7 +174,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       const SizedBox(height: 16),
                       _buildFeatureCard(
-                        context,
                         icon: Icons.volunteer_activism,
                         title: 'Donasi',
                         route: '/donasi',
@@ -185,7 +182,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       const SizedBox(height: 16),
                       _buildFeatureCard(
-                        context,
                         icon: Icons.notifications_active,
                         title: 'Pengumuman',
                         route: '/pengumuman',
@@ -203,12 +199,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
           // ✅ TOMBOL PENGATURAN (DI POSISI PALING ATAS DENGAN GESTURE DETECTOR)
           Positioned(
-            top: MediaQuery.paddingOf(context).top + 16,
+            top: Get.mediaQuery.padding.top + 16,
             right: 16,
             child: GestureDetector(
               onTap: () {
                 debugPrint('Tombol pengaturan ditekan');
-                context.go('/pengaturan');
+                Get.toNamed('/pengaturan');
               },
               child: Container(
                 width: 48,
@@ -230,26 +226,25 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildFeatureCard(
-    BuildContext context, {
+  Widget _buildFeatureCard({
     required IconData icon,
     required String title,
     required String route,
     required int delay,
     required Color color,
   }) {
-    final isTablet = MediaQuery.sizeOf(context).width >= 600;
-    final primaryColor = Theme.of(context).colorScheme.primary;
+    final isTablet = Get.width >= 600;
+    final primaryColor = Get.theme.colorScheme.primary;
 
     return FadeInWidget(
       delay: Duration(milliseconds: delay),
       child: GestureDetector(
-        onTap: () => context.go(route),
+        onTap: () => Get.toNamed(route),
         child: Container(
           margin: const EdgeInsets.symmetric(vertical: 4),
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
           decoration: BoxDecoration(
-            color: Theme.of(context).brightness == Brightness.dark
+            color: Get.theme.brightness == Brightness.dark
                 ? Colors.grey[900]?.withOpacity(0.95)
                 : Colors.white.withOpacity(0.95),
             borderRadius: BorderRadius.circular(20),

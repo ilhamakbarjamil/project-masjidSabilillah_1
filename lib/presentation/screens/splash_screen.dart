@@ -1,8 +1,8 @@
 // lib/presentation/screens/splash_screen.dart
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:get/get.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -46,14 +46,14 @@ class _SplashScreenState extends State<SplashScreen> {
       
       // ✅ Redirect ke HOME jika sudah login, ke LOGIN jika belum
       if (mounted) {
-        context.go(session != null ? '/' : '/login');
+        Get.offAllNamed(session != null ? '/' : '/login');
       }
     } catch (e) {
       print('🔥 SPLASH ERROR: $e');
       
       // Fallback: redirect ke login
       if (mounted) {
-        context.go('/login');
+        Get.offAllNamed('/login');
       }
     }
   }

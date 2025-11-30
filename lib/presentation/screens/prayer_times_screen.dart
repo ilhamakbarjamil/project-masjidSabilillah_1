@@ -1,11 +1,11 @@
 // lib/presentation/screens/prayer_times_screen.dart
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:masjid_sabilillah/core/constants/app_colors.dart';
 import 'package:masjid_sabilillah/data/models/prayer_time_model.dart';
 import 'package:masjid_sabilillah/data/services/api_service.dart';
 import 'package:masjid_sabilillah/data/services/local_storage_service.dart';
 import 'package:masjid_sabilillah/presentation/widgets/common/blue_card.dart';
+import 'package:get/get.dart';
 
 class PrayerTimesScreen extends StatelessWidget {
   const PrayerTimesScreen({super.key});
@@ -25,7 +25,7 @@ class PrayerTimesScreen extends StatelessWidget {
         foregroundColor: Theme.of(context).appBarTheme.foregroundColor,
         actions: [
           IconButton(
-            onPressed: () => context.go('/'), // Kembali ke Home
+            onPressed: () => Get.offAllNamed('/'), // Kembali ke Home
             icon: const Icon(Icons.home),
           ),
         ],
@@ -49,10 +49,7 @@ class PrayerTimesScreen extends StatelessWidget {
                   const SizedBox(height: 16),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(backgroundColor: AppColors.lightPrimary),
-                    onPressed: () => Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (_) => const PrayerTimesScreen()),
-                    ),
+                    onPressed: () => Get.offNamed('/jadwal'),
                     child: const Text('Coba Lagi'),
                   ),
                 ],

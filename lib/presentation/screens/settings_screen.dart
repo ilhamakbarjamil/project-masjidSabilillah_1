@@ -1,33 +1,25 @@
 // lib/presentation/screens/settings_screen.dart
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:masjid_sabilillah/core/constants/app_colors.dart';
-import 'package:masjid_sabilillah/core/providers/theme_provider.dart';
+import 'package:masjid_sabilillah/core/providers/theme_controller.dart';
+import 'package:get/get.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
-  Future<void> _logout(BuildContext context) async {
+  Future<void> _logout() async {
     try {
       await Supabase.instance.client.auth.signOut();
-      if (context.mounted) {
-        context.go('/login');
-      }
+      Get.offAllNamed('/login');
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal logout: ${e.toString()}')),
-      );
+      Get.snackbar('Logout Error', 'Gagal logout: ${e.toString()}');
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final primaryColor = Theme.of(context).colorScheme.primary;
-    final themeProvider = Provider.of<ThemeProvider>(context);
-    final isDarkMode = themeProvider.isDarkMode;
-
+    final themeController = Get.find<ThemeController>();
     return Scaffold(
       appBar: AppBar(
         title: const Text('Pengaturan'),
@@ -47,77 +39,47 @@ class SettingsScreen extends StatelessWidget {
             const SizedBox(height: 16),
             Container(
               decoration: BoxDecoration(
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.grey[800]
-                    : Colors.grey[100],
+                color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[800] : Colors.grey[100],
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: primaryColor.withOpacity(0.3),
-                ),
+                border: Border.all(color: primaryColor.withOpacity(0.3)),
               ),
-              child: SwitchListTile(
+              child: Obx(() => SwitchListTile(
                 title: const Text('Tema Gelap'),
-                value: isDarkMode,
+                value: themeController.isDarkMode.value,
                 activeColor: primaryColor,
                 onChanged: (bool value) {
-                  themeProvider.toggleTheme(value);
+                  themeController.toggleTheme(value);
                 },
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-              ),
+              )),
             ),
             const SizedBox(height: 32),
-
             // Section: Akun
-            const Text(
-              'Akun',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
+            const Text('Akun', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
             Container(
               decoration: BoxDecoration(
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.grey[800]
-                    : Colors.grey[100],
+                color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[800] : Colors.grey[100],
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: primaryColor.withOpacity(0.3),
-                ),
+                border: Border.all(color: primaryColor.withOpacity(0.3)),
               ),
               child: ListTile(
-                title: const Text(
-                  'Logout',
-                  style: TextStyle(color: Colors.red, fontWeight: FontWeight.w600),
-                ),
+                title: const Text('Logout', style: TextStyle(color: Colors.red, fontWeight: FontWeight.w600)),
                 leading: Container(
                   width: 40,
                   height: 40,
-                  decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.logout,
-                    color: Colors.red,
-                    size: 24,
-                  ),
+                  decoration: BoxDecoration(color: Colors.red.withOpacity(0.1), shape: BoxShape.circle),
+                  child: const Icon(Icons.logout, color: Colors.red, size: 24),
                 ),
-                onTap: () => _showLogoutDialog(context),
+                onTap: () => _showLogoutDialog(),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16),
               ),
             ),
             const Spacer(),
-            
-            // ✅ TOMBOL KEMBALI KE HOME
+            // TOMBOL KEMBALI KE HOME
             Container(
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    primaryColor.withOpacity(0.8),
-                    primaryColor,
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
+                gradient: LinearGradient(colors: [primaryColor.withOpacity(0.8), primaryColor], begin: Alignment.topLeft, end: Alignment.bottomRight),
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
@@ -128,35 +90,14 @@ class SettingsScreen extends StatelessWidget {
                 ],
               ),
               child: TextButton(
-                onPressed: () => context.go('/'),
-                style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  backgroundColor: primaryColor,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                ),
+                onPressed: () => Get.offAllNamed('/'),
+                style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16), backgroundColor: primaryColor, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
-                      Icons.home,
-                      color: Theme.of(context).brightness == Brightness.dark
-                          ? Colors.white
-                          : Colors.white,
-                      size: 24,
-                    ),
+                    Icon(Icons.home, color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.white, size: 24,),
                     const SizedBox(width: 8),
-                    Text(
-                      'Kembali ke Home',
-                      style: TextStyle(
-                        color: Theme.of(context).brightness == Brightness.dark
-                            ? Colors.white
-                            : Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    Text('Kembali ke Home', style: TextStyle(color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
                   ],
                 ),
               ),
@@ -168,29 +109,19 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  void _showLogoutDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Konfirmasi Logout'),
-        content: const Text('Apakah Anda yakin ingin keluar dari akun?'),
-        actions: [
-          TextButton(
-            onPressed: Navigator.of(context).pop,
-            child: const Text('Batal'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-            ),
-            onPressed: () {
-              Navigator.of(context).pop();
-              _logout(context);
-            },
-            child: const Text('Logout'),
-          ),
-        ],
-      ),
+  void _showLogoutDialog() {
+    Get.defaultDialog(
+      title: 'Konfirmasi Logout',
+      middleText: 'Apakah Anda yakin ingin keluar dari akun?',
+      textCancel: 'Batal',
+      textConfirm: 'Logout',
+      confirmTextColor: Colors.white,
+      onConfirm: () {
+        Get.back();
+        _logout();
+      },
+      cancelTextColor: Colors.blue,
+      onCancel: () {},
     );
   }
 }

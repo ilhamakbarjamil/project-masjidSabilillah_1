@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:get/get.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -62,14 +63,10 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       // ✅ Redirect ke HOME SCREEN setelah login berhasil
-      if (context.mounted) {
-        context.go('/');
-      }
+      Get.offAllNamed('/');
     } on AuthException catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Login gagal: ${e.message}')),
-        );
+        Get.snackbar('Login gagal', e.message);
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
