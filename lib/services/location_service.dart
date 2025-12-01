@@ -30,62 +30,63 @@ class LocationService {
     if (permission == LocationPermission.deniedForever) {
       return false;
     }
-
-    // Request background location if needed
-    await Permission.locationAlways.request();
     
+    // Optional: Request precise accuracy permission explicitly for Android 12+
+    // Tapi untuk experiment ini, standard request sudah cukup.
     return true;
   }
 
-  Stream<LocationData> getLocationStream(LocationProvider provider) {
-    // Stop existing stream first
-    stopLocationStream();
-    
-    _currentProvider = provider;
-    
-    // Create location settings without cache
-    LocationSettings locationSettings;
-    
+  // Helper untuk membuat settings agar tidak duplikasi code
+  LocationSettings _getSettings(LocationProvider provider) {
     if (Platform.isAndroid) {
       if (provider == LocationProvider.network) {
-        locationSettings = AndroidSettings(
-          accuracy: LocationAccuracy.low,
-          distanceFilter: 5, // meters - lebih sensitif untuk tracking
-          forceLocationManager: false, // Use network provider
-          intervalDuration: const Duration(seconds: 2), // Update lebih cepat
+        return AndroidSettings(
+          // PERUBAHAN UTAMA DI SINI:
+          // Gunakan 'balanced' atau 'high'. 'balanced' menggunakan WiFi & Cell Towers (sekitar 100m - 40m).
+          // 'high' dengan forceLocationManager: false akan menggunakan WiFi sangat agresif (bisa sampai 10-20m).
+          accuracy: LocationAccuracy.high, 
+          distanceFilter: 0, 
+          forceLocationManager: false, // False = Gunakan Google Play Services (Fused Location) -> Bagus untuk Indoor
+          intervalDuration: const Duration(seconds: 2),
         );
       } else {
-        locationSettings = AndroidSettings(
-          accuracy: LocationAccuracy.high,
-          distanceFilter: 3, // meters - lebih presisi untuk GPS
-          forceLocationManager: true, // Force GPS, don't use network
-          intervalDuration: const Duration(seconds: 1), // Update lebih cepat untuk GPS
+        return AndroidSettings(
+          // GPS Murni
+          accuracy: LocationAccuracy.best,
+          distanceFilter: 0, 
+          forceLocationManager: true, // True = Paksa Hardware GPS (Akan sulit lock di Indoor)
+          intervalDuration: const Duration(seconds: 2),
         );
       }
     } else {
-      // iOS settings
+      // iOS
       if (provider == LocationProvider.network) {
-        locationSettings = AppleSettings(
-          accuracy: LocationAccuracy.low,
-          distanceFilter: 5,
+        return AppleSettings(
+          accuracy: LocationAccuracy.best, // iOS smart enough to switch
+          activityType: ActivityType.fitness,
+          pauseLocationUpdatesAutomatically: true,
         );
       } else {
-        locationSettings = AppleSettings(
-          accuracy: LocationAccuracy.best,
-          distanceFilter: 3,
+        return AppleSettings(
+          accuracy: LocationAccuracy.bestForNavigation,
+          activityType: ActivityType.automotiveNavigation,
         );
       }
     }
+  }
 
-    // Create stream controller for better control
+  Stream<LocationData> getLocationStream(LocationProvider provider) {
+    stopLocationStream();
+    _currentProvider = provider;
+    
+    final locationSettings = _getSettings(provider);
+
     _streamController = StreamController<LocationData>.broadcast();
     
     _positionSubscription = Geolocator.getPositionStream(
       locationSettings: locationSettings,
     ).listen(
       (Position position) {
-        // Always add position updates - stream akan terus berjalan
-        // Terima semua update dari stream, tidak ada filter karena stream sudah fresh
         if (_streamController != null && !_streamController!.isClosed) {
           _streamController!.add(
             LocationData(
@@ -93,24 +94,15 @@ class LocationService {
               longitude: position.longitude,
               accuracy: position.accuracy,
               timestamp: position.timestamp,
-              provider: provider == LocationProvider.network ? 'network' : 'gps',
+              provider: provider == LocationProvider.network ? 'Network (Fused)' : 'GPS (Hardware)',
             ),
           );
         }
       },
       onError: (error) {
-        // Log error tapi jangan stop stream
         debugPrint('Location stream error: $error');
         if (_streamController != null && !_streamController!.isClosed) {
           _streamController!.addError(error);
-        }
-      },
-      cancelOnError: false, // Terus berjalan meski ada error
-      onDone: () {
-        // Stream selesai, tutup controller
-        debugPrint('Location stream done');
-        if (_streamController != null && !_streamController!.isClosed) {
-          _streamController!.close();
         }
       },
     );
@@ -121,80 +113,41 @@ class LocationService {
 
   Future<LocationData?> getCurrentLocation(LocationProvider provider) async {
     try {
-      LocationSettings locationSettings;
-      
-      if (Platform.isAndroid) {
-        if (provider == LocationProvider.network) {
-          locationSettings = AndroidSettings(
-            accuracy: LocationAccuracy.low,
-            forceLocationManager: false,
-          );
-        } else {
-          locationSettings = AndroidSettings(
-            accuracy: LocationAccuracy.high,
-            forceLocationManager: true, // Force GPS
-          );
-        }
-      } else {
-        // iOS
-        if (provider == LocationProvider.network) {
-          locationSettings = AppleSettings(
-            accuracy: LocationAccuracy.low,
-          );
-        } else {
-          locationSettings = AppleSettings(
-            accuracy: LocationAccuracy.best,
-          );
-        }
-      }
+      final locationSettings = _getSettings(provider);
 
-      // Get fresh location, don't use cache
-      // Settings already configured to get fresh location
+      // Tambahkan timeout. 
+      // GPS murni di indoor mungkin tidak akan pernah dapat fix (timeout).
+      // Network di indoor akan cepat dapat fix.
       Position position = await Geolocator.getCurrentPosition(
         locationSettings: locationSettings,
-      );
-
-      // Verify position is fresh (not cached)
-      final now = DateTime.now();
-      final positionTime = position.timestamp;
-      final age = now.difference(positionTime).inSeconds;
-      
-      // Reject if position is older than 5 seconds and try again
-      if (age > 5) {
-        // Try to get a new one with fresh settings
-        position = await Geolocator.getCurrentPosition(
-          locationSettings: locationSettings,
-        );
-      }
+      ).timeout(const Duration(seconds: 60), onTimeout: () {
+        throw TimeoutException("Gagal mendapatkan lokasi dalam 60 detik. Mungkin sinyal lemah.");
+      });
 
       return LocationData(
         latitude: position.latitude,
         longitude: position.longitude,
         accuracy: position.accuracy,
         timestamp: position.timestamp,
-        provider: provider == LocationProvider.network ? 'network' : 'gps',
+        provider: provider == LocationProvider.network ? 'Network (Fused)' : 'GPS (Hardware)',
       );
     } catch (e) {
-      return null;
+      debugPrint("Error getCurrentLocation: $e");
+      return null; // Controller akan menangani null ini sebagai error
     }
   }
 
   void stopLocationStream() {
-    // Cancel subscription terlebih dahulu
     _positionSubscription?.cancel();
     _positionSubscription = null;
     
-    // Close stream controller jika masih terbuka
     if (_streamController != null && !_streamController!.isClosed) {
       _streamController!.close();
     }
     _streamController = null;
     _locationStream = null;
     _currentProvider = null;
-    
-    debugPrint('Location stream stopped');
   }
 
   LocationProvider? get currentProvider => _currentProvider;
 }
-
