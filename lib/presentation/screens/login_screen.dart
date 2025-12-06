@@ -1,11 +1,13 @@
 // lib/presentation/screens/login_screen.dart
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'dart:math';
+
+// Import signup screen
+import 'signup_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -32,7 +34,6 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
   double _rightPupilY = 0.0;
   double _earRotation = 0.0;
   bool _hasGlasses = false;
-  bool _isKeyboardVisible = false;
 
   @override
   void initState() {
@@ -193,7 +194,9 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
         password: _passwordController.text.trim(),
       );
 
-      Get.offAllNamed('/');
+      // Redirect ke home screen setelah login berhasil
+      // Ganti '/' dengan HomeScreen Anda
+      Get.offAllNamed('/home');
     } on AuthException catch (e) {
       Get.snackbar(
         'Login Gagal',
@@ -208,6 +211,10 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
         setState(() => _isLoading = false);
       }
     }
+  }
+
+  void _navigateToSignup() {
+    Get.to(() => const SignupScreen());
   }
 
   @override
@@ -693,12 +700,12 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                             ),
                             const SizedBox(height: 24),
 
-                            // Signup Button
+                            // Signup Button - MENGGUNAKAN GETX
                             SizedBox(
                               width: double.infinity,
                               height: 56,
                               child: OutlinedButton(
-                                onPressed: () => context.go('/signup'),
+                                onPressed: _navigateToSignup,
                                 style: OutlinedButton.styleFrom(
                                   foregroundColor: colors.primary,
                                   side: BorderSide(
