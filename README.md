@@ -1,3 +1,5 @@
+# STRUKTUR PROJECT DATABASE
+```bash
 lib/
 ├── 🧱 core/                     # Folder untuk kode inti yang dipakai bersama
 │   ├── constants/
@@ -31,3 +33,4 @@ lib/
 │
 ├── 🏁 main.dart                 # Pintu masuk aplikasi (Inisialisasi Awal)
 └── ⚙️ .env                       # File rahasia (URL & Key Supabase) - JANGAN DI-UPLOAD KE GITHUB
+```
