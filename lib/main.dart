@@ -11,6 +11,8 @@ import 'package:masjid_sabilillah/lokasi/views/home_view.dart';
 // Tambahkan import GetX controller utama bila perlu
 import 'package:masjid_sabilillah/core/providers/theme_controller.dart';
 import 'package:masjid_sabilillah/core/constants/app_colors.dart';
+// Tambahkan import pengumuman:
+import 'package:masjid_sabilillah/database/features/announcements/views/announcement_list_view.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,6 +41,10 @@ class MyApp extends StatelessWidget {
             GetPage(name: '/jadwal', page: () => const PrayerTimesScreen()),
             GetPage(name: '/pengaturan', page: () => const SettingsScreen()),
             GetPage(name: '/lokasi', page: () => const HomeView()),
+            GetPage(
+              name: '/pengumuman',
+              page: () => const AnnouncementListView(),
+            ),
           ],
           initialRoute: '/splash',
           title: 'Masjid Sabilillah',
