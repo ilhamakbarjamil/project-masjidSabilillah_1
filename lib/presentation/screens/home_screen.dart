@@ -18,6 +18,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   late Animation<Offset> _slideAnimation;
   int _selectedIndex = 0;
 
+  // Kita akan buat widget options di dalam build method
+
   @override
   void initState() {
     super.initState();
@@ -248,266 +250,400 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     );
   }
 
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final colors = theme.colorScheme;
     final isDarkMode = theme.brightness == Brightness.dark;
-    
+
+    // Buat widget options di dalam build method agar bisa mengakses state
+    final List<Widget> _widgetOptions = <Widget>[
+      _HomeContent(
+        animationController: _animationController,
+        opacityAnimation: _opacityAnimation,
+        scaleAnimation: _scaleAnimation,
+        slideAnimation: _slideAnimation,
+        userName: _userName,
+        isDarkMode: isDarkMode,
+        onLogoutPressed: _showLogoutDialog,
+      ),
+      Container(
+        color: Colors.grey[100],
+        child: Center(
+          child: Text(
+            'Jadwal Sholat',
+            style: TextStyle(
+              fontSize: 30,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey[700],
+            ),
+          ),
+        ),
+      ),
+      Container(
+        color: Colors.grey[100],
+        child: Center(
+          child: Text(
+            'Donasi Digital',
+            style: TextStyle(
+              fontSize: 30,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey[700],
+            ),
+          ),
+        ),
+      ),
+      Container(
+        color: Colors.grey[100],
+        child: Center(
+          child: Text(
+            'Profil',
+            style: TextStyle(
+              fontSize: 30,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey[700],
+            ),
+          ),
+        ),
+      ),
+    ];
+
     return Scaffold(
       backgroundColor: isDarkMode ? const Color(0xFF0A0E21) : const Color(0xFFF8F9FA),
-      body: Stack(
-        children: [
-          // Background dengan gradien dan efek blur
-          Positioned.fill(
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: isDarkMode
-                      ? [
-                          const Color(0xFF0A0E21),
-                          const Color(0xFF1A1F33),
-                          const Color(0xFF2D3350),
-                        ]
-                      : [
-                          const Color(0xFFF8F9FA),
-                          const Color(0xFFE9ECEF),
-                          const Color(0xFFDEE2E6),
-                        ],
-                ),
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: _widgetOptions,
+      ),
+      bottomNavigationBar: _buildBottomNavigationBar(isDarkMode: isDarkMode),
+    );
+  }
+
+  BottomNavigationBar _buildBottomNavigationBar({required bool isDarkMode}) {
+    return BottomNavigationBar(
+      type: BottomNavigationBarType.fixed,
+      backgroundColor: isDarkMode ? const Color(0xFF1A1F33) : Colors.white,
+      selectedItemColor: Colors.orange[600],
+      unselectedItemColor: isDarkMode ? Colors.white70 : Colors.grey[600],
+      selectedLabelStyle: const TextStyle(
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
+      ),
+      unselectedLabelStyle: const TextStyle(
+        fontSize: 11,
+        fontWeight: FontWeight.w500,
+      ),
+      currentIndex: _selectedIndex,
+      onTap: _onItemTapped,
+      items: const [
+        BottomNavigationBarItem(
+          icon: Icon(Icons.home_rounded),
+          activeIcon: Icon(Icons.home_filled),
+          label: 'Beranda',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.access_time_rounded),
+          activeIcon: Icon(Icons.access_time_filled),
+          label: 'Jadwal',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.volunteer_activism_rounded),
+          activeIcon: Icon(Icons.volunteer_activism),
+          label: 'Donasi',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.person_outline_rounded),
+          activeIcon: Icon(Icons.person),
+          label: 'Profil',
+        ),
+      ],
+    );
+  }
+}
+
+// Widget untuk konten halaman utama
+class _HomeContent extends StatelessWidget {
+  final AnimationController animationController;
+  final Animation<double> opacityAnimation;
+  final Animation<double> scaleAnimation;
+  final Animation<Offset> slideAnimation;
+  final String? userName;
+  final bool isDarkMode;
+  final VoidCallback onLogoutPressed;
+
+  const _HomeContent({
+    required this.animationController,
+    required this.opacityAnimation,
+    required this.scaleAnimation,
+    required this.slideAnimation,
+    required this.userName,
+    required this.isDarkMode,
+    required this.onLogoutPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        // Background dengan gradien dan efek blur
+        Positioned.fill(
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: isDarkMode
+                    ? [
+                        const Color(0xFF0A0E21),
+                        const Color(0xFF1A1F33),
+                        const Color(0xFF2D3350),
+                      ]
+                    : [
+                        const Color(0xFFF8F9FA),
+                        const Color(0xFFE9ECEF),
+                        const Color(0xFFDEE2E6),
+                      ],
               ),
             ),
           ),
-          
-          // Blur circles decor
-          Positioned(
-            top: -100,
-            right: -100,
-            child: Container(
-              width: 300,
-              height: 300,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.orange.withOpacity(0.1),
-                    Colors.orange.withOpacity(0.05),
-                    Colors.transparent,
-                  ],
-                ),
+        ),
+
+        // Blur circles decor
+        Positioned(
+          top: -100,
+          right: -100,
+          child: Container(
+            width: 300,
+            height: 300,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                colors: [
+                  Colors.orange.withOpacity(0.1),
+                  Colors.orange.withOpacity(0.05),
+                  Colors.transparent,
+                ],
               ),
             ),
           ),
-          
-          Positioned(
-            bottom: -100,
-            left: -100,
-            child: Container(
-              width: 300,
-              height: 300,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.blue.withOpacity(0.1),
-                    Colors.blue.withOpacity(0.05),
-                    Colors.transparent,
-                  ],
-                ),
+        ),
+
+        Positioned(
+          bottom: -100,
+          left: -100,
+          child: Container(
+            width: 300,
+            height: 300,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                colors: [
+                  Colors.blue.withOpacity(0.1),
+                  Colors.blue.withOpacity(0.05),
+                  Colors.transparent,
+                ],
               ),
             ),
           ),
-          
-          AnimatedBuilder(
-            animation: _animationController,
-            builder: (context, child) {
-              // FIXED: Clamp nilai opacity untuk memastikan tetap dalam range 0-1
-              final clampedOpacity = _opacityAnimation.value.clamp(0.0, 1.0);
-              return Opacity(
-                opacity: clampedOpacity,
-                child: Transform.scale(
-                  scale: _scaleAnimation.value,
-                  child: CustomScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    slivers: [
-                      // Header dengan efek glassmorphism
-                      SliverAppBar(
-                        expandedHeight: 180,
-                        floating: false,
-                        pinned: true,
-                        backgroundColor: Colors.transparent,
-                        elevation: 0,
-                        flexibleSpace: FlexibleSpaceBar(
-                          collapseMode: CollapseMode.pin,
-                          background: Container(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [
-                                  Colors.orange[400]!.withOpacity(0.9),
-                                  Colors.orange[600]!.withOpacity(0.9),
-                                ],
-                              ),
-                              borderRadius: const BorderRadius.only(
-                                bottomLeft: Radius.circular(40),
-                                bottomRight: Radius.circular(40),
-                              ),
+        ),
+
+        AnimatedBuilder(
+          animation: animationController,
+          builder: (context, child) {
+            // FIXED: Clamp nilai opacity untuk memastikan tetap dalam range 0-1
+            final clampedOpacity = opacityAnimation.value.clamp(0.0, 1.0);
+            return Opacity(
+              opacity: clampedOpacity,
+              child: Transform.scale(
+                scale: scaleAnimation.value,
+                child: CustomScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  slivers: [
+                    // Header dengan efek glassmorphism
+                    SliverAppBar(
+                      expandedHeight: 180,
+                      floating: false,
+                      pinned: true,
+                      backgroundColor: Colors.transparent,
+                      elevation: 0,
+                      flexibleSpace: FlexibleSpaceBar(
+                        collapseMode: CollapseMode.pin,
+                        background: Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                Colors.orange[400]!.withOpacity(0.9),
+                                Colors.orange[600]!.withOpacity(0.9),
+                              ],
                             ),
-                            child: Stack(
-                              children: [
-                                // Efek noise texture
-                                Container(
-                                  decoration: BoxDecoration(
-                                    borderRadius: const BorderRadius.only(
-                                      bottomLeft: Radius.circular(40),
-                                      bottomRight: Radius.circular(40),
-                                    ),
-                                    gradient: LinearGradient(
-                                      begin: Alignment.topCenter,
-                                      end: Alignment.bottomCenter,
-                                      colors: [
-                                        Colors.white.withOpacity(0.05),
-                                        Colors.transparent,
-                                      ],
-                                    ),
+                            borderRadius: const BorderRadius.only(
+                              bottomLeft: Radius.circular(40),
+                              bottomRight: Radius.circular(40),
+                            ),
+                          ),
+                          child: Stack(
+                            children: [
+                              // Efek noise texture
+                              Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: const BorderRadius.only(
+                                    bottomLeft: Radius.circular(40),
+                                    bottomRight: Radius.circular(40),
                                   ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      SlideTransition(
-                                        position: _slideAnimation,
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              'Assalamualaikum',
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                                color: Colors.white.withOpacity(0.9),
-                                                fontWeight: FontWeight.w500,
-                                                letterSpacing: 1,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 6),
-                                            Text(
-                                              _userName ?? 'Tamu',
-                                              style: const TextStyle(
-                                                fontSize: 32,
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.w800,
-                                                letterSpacing: -0.5,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 8),
-                                            Row(
-                                              children: [
-                                                Icon(
-                                                  Icons.mosque,
-                                                  size: 16,
-                                                  color: Colors.white.withOpacity(0.8),
-                                                ),
-                                                const SizedBox(width: 6),
-                                                Text(
-                                                  'Masjid Sabilillah',
-                                                  style: TextStyle(
-                                                    fontSize: 14,
-                                                    color: Colors.white.withOpacity(0.8),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                      ),
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomCenter,
+                                    colors: [
+                                      Colors.white.withOpacity(0.05),
+                                      Colors.transparent,
                                     ],
                                   ),
                                 ),
-                              ],
-                            ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 24, vertical: 40),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    SlideTransition(
+                                      position: slideAnimation,
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            'Assalamualaikum',
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              color:
+                                                  Colors.white.withOpacity(0.9),
+                                              fontWeight: FontWeight.w500,
+                                              letterSpacing: 1,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 6),
+                                          Text(
+                                            userName ?? 'Tamu',
+                                            style: const TextStyle(
+                                              fontSize: 32,
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.w800,
+                                              letterSpacing: -0.5,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Row(
+                                            children: [
+                                              Icon(
+                                                Icons.mosque,
+                                                size: 16,
+                                                color:
+                                                    Colors.white.withOpacity(0.8),
+                                              ),
+                                              const SizedBox(width: 6),
+                                              Text(
+                                                'Masjid Sabilillah',
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                  color: Colors.white
+                                                      .withOpacity(0.8),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        actions: [
-                          Padding(
-                            padding: const EdgeInsets.only(right: 16),
-                            child: GestureDetector(
-                              onTap: _showLogoutDialog,
-                              child: Container(
-                                width: 44,
-                                height: 44,
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.2),
-                                  borderRadius: BorderRadius.circular(14),
-                                  border: Border.all(
-                                    color: Colors.white.withOpacity(0.3),
-                                    width: 1.5,
-                                  ),
+                      ),
+                      actions: [
+                        Padding(
+                          padding: const EdgeInsets.only(right: 16),
+                          child: GestureDetector(
+                            onTap: onLogoutPressed,
+                            child: Container(
+                              width: 44,
+                              height: 44,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(
+                                  color: Colors.white.withOpacity(0.3),
+                                  width: 1.5,
                                 ),
-                                child: const Icon(
-                                  Icons.logout,
-                                  color: Colors.white,
-                                  size: 20,
-                                ),
+                              ),
+                              child: const Icon(
+                                Icons.logout,
+                                color: Colors.white,
+                                size: 20,
                               ),
                             ),
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
+                    ),
 
-                      // Menu Grid dengan staggered animation
-                      SliverPadding(
-                        padding: const EdgeInsets.all(24),
-                        sliver: SliverGrid(
-                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            crossAxisSpacing: 16,
-                            mainAxisSpacing: 16,
-                            childAspectRatio: 0.9,
-                          ),
-                          delegate: SliverChildBuilderDelegate(
-                            (context, index) {
-                              final items = _getMenuItems();
-                              final item = items[index];
-                              final delay = 100 + (index * 100);
-                              
-                              return _buildMenuCard(
-                                item: item,
-                                delay: delay,
-                                index: index,
-                                isDarkMode: isDarkMode,
-                              );
-                            },
-                            childCount: _getMenuItems().length,
-                          ),
+                    // Menu Grid dengan staggered animation
+                    SliverPadding(
+                      padding: const EdgeInsets.all(24),
+                      sliver: SliverGrid(
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 16,
+                          mainAxisSpacing: 16,
+                          childAspectRatio: 0.9,
+                        ),
+                        delegate: SliverChildBuilderDelegate(
+                          (context, index) {
+                            final items = _getMenuItems();
+                            final item = items[index];
+                            final delay = 100 + (index * 100);
+
+                            return _buildMenuCard(
+                              item: item,
+                              delay: delay,
+                              index: index,
+                              isDarkMode: isDarkMode,
+                            );
+                          },
+                          childCount: _getMenuItems().length,
                         ),
                       ),
+                    ),
 
-                      // Jadwal Sholat dengan efek glassmorphism
-                      SliverPadding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24),
-                        sliver: SliverToBoxAdapter(
-                          child: _buildPrayerTimesCard(isDarkMode: isDarkMode),
-                        ),
+                    // Jadwal Sholat dengan efek glassmorphism
+                    SliverPadding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      sliver: SliverToBoxAdapter(
+                        child: _buildPrayerTimesCard(isDarkMode: isDarkMode),
                       ),
+                    ),
 
-                      // Spacer bottom
-                      const SliverToBoxAdapter(
-                        child: SizedBox(height: 40),
-                      ),
-                    ],
-                  ),
+                    // Spacer untuk bottom navigation bar
+                    const SliverToBoxAdapter(
+                      child: SizedBox(height: 80),
+                    ),
+                  ],
                 ),
-              );
-            },
-          ),
-        ],
-      ),
+              ),
+            );
+          },
+        ),
+      ],
     );
   }
 
@@ -536,29 +672,31 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         onTap: () => Get.toNamed(item.route),
         child: Container(
           decoration: BoxDecoration(
-            color: isDarkMode ? const Color(0xFF1A1F33).withOpacity(0.8) : Colors.white.withOpacity(0.9),
+            color: isDarkMode
+                ? const Color(0xFF1A1F33).withOpacity(0.8)
+                : Colors.white.withOpacity(0.9),
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: isDarkMode 
-                  ? Colors.black.withOpacity(0.3)
-                  : item.color.withOpacity(0.1),
+                color: isDarkMode
+                    ? Colors.black.withOpacity(0.3)
+                    : item.color.withOpacity(0.1),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
               ),
               // Efek inner shadow dengan dua layer border
               BoxShadow(
                 color: isDarkMode
-                  ? Colors.white.withOpacity(0.05)
-                  : Colors.white.withOpacity(0.8),
+                    ? Colors.white.withOpacity(0.05)
+                    : Colors.white.withOpacity(0.8),
                 blurRadius: 2,
                 offset: const Offset(0, -1),
               ),
             ],
             border: Border.all(
               color: isDarkMode
-                ? Colors.white.withOpacity(0.1)
-                : Colors.white.withOpacity(0.8),
+                  ? Colors.white.withOpacity(0.1)
+                  : Colors.white.withOpacity(0.8),
               width: 2,
             ),
             // Efek gradien untuk inner highlight
@@ -566,7 +704,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                isDarkMode ? Colors.white.withOpacity(0.02) : Colors.white.withOpacity(0.3),
+                isDarkMode
+                    ? Colors.white.withOpacity(0.02)
+                    : Colors.white.withOpacity(0.3),
                 Colors.transparent,
               ],
               stops: const [0.0, 0.3],
@@ -738,12 +878,30 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   String _getCurrentDate() {
     final now = DateTime.now();
-    final days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-    final months = [
-      'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+    final days = [
+      'Minggu',
+      'Senin',
+      'Selasa',
+      'Rabu',
+      'Kamis',
+      'Jumat',
+      'Sabtu'
     ];
-    
+    final months = [
+      'Januari',
+      'Februari',
+      'Maret',
+      'April',
+      'Mei',
+      'Juni',
+      'Juli',
+      'Agustus',
+      'September',
+      'Oktober',
+      'November',
+      'Desember'
+    ];
+
     return '${days[now.weekday - 1]}, ${now.day} ${months[now.month - 1]} ${now.year}';
   }
 
@@ -810,11 +968,31 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   List<Widget> _buildPrayerTimes() {
     final prayerData = [
-      PrayerData(name: 'Subuh', time: '04:30', icon: Icons.wb_twilight, color: Colors.blue[100]!),
-      PrayerData(name: 'Dzuhur', time: '12:00', icon: Icons.wb_sunny, color: Colors.orange[100]!),
-      PrayerData(name: 'Ashar', time: '15:30', icon: Icons.sunny, color: Colors.yellow[100]!),
-      PrayerData(name: 'Maghrib', time: '18:15', icon: Icons.nights_stay, color: Colors.purple[100]!),
-      PrayerData(name: 'Isya', time: '19:30', icon: Icons.nightlight, color: Colors.indigo[100]!),
+      PrayerData(
+          name: 'Subuh',
+          time: '04:30',
+          icon: Icons.wb_twilight,
+          color: Colors.blue[100]!),
+      PrayerData(
+          name: 'Dzuhur',
+          time: '12:00',
+          icon: Icons.wb_sunny,
+          color: Colors.orange[100]!),
+      PrayerData(
+          name: 'Ashar',
+          time: '15:30',
+          icon: Icons.sunny,
+          color: Colors.yellow[100]!),
+      PrayerData(
+          name: 'Maghrib',
+          time: '18:15',
+          icon: Icons.nights_stay,
+          color: Colors.purple[100]!),
+      PrayerData(
+          name: 'Isya',
+          time: '19:30',
+          icon: Icons.nightlight,
+          color: Colors.indigo[100]!),
     ];
 
     return prayerData.map((prayer) {
