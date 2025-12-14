@@ -75,46 +75,9 @@ GoRouter _createRouter(bool isLoggedIn) {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  ThemeData _buildLightTheme() {
-    return ThemeData(
-      useMaterial3: true,
-      brightness: Brightness.light,
-      colorScheme: ColorScheme.light(
-        primary: AppColors.lightPrimary,
-        onPrimary: AppColors.lightTextOnPrimary,
-        background: AppColors.lightBackground,
-        surface: AppColors.lightSurface,
-        onBackground: AppColors.lightTextPrimary,
-      ),
-      scaffoldBackgroundColor: AppColors.lightBackground,
-      appBarTheme: AppBarTheme(
-        backgroundColor: AppColors.lightPrimary,
-        foregroundColor: AppColors.lightTextOnPrimary,
-      ),
-    );
-  }
-
-  ThemeData _buildDarkTheme() {
-    return ThemeData(
-      useMaterial3: true,
-      brightness: Brightness.dark,
-      colorScheme: ColorScheme.dark(
-        primary: AppColors.darkPrimary,
-        onPrimary: AppColors.lightTextOnPrimary,
-        background: AppColors.darkBackground,
-        surface: AppColors.darkSurface,
-        onBackground: AppColors.darkTextPrimary,
-      ),
-      scaffoldBackgroundColor: AppColors.darkBackground,
-      appBarTheme: AppBarTheme(
-        backgroundColor: AppColors.darkSurface,
-        foregroundColor: AppColors.lightTextOnPrimary,
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
+<<<<<<< HEAD
     return Consumer2<ThemeProvider, AuthProvider>(
       builder: (context, themeProvider, authProvider, child) {
         final isInitializing =
@@ -138,11 +101,39 @@ class MyApp extends StatelessWidget {
 
         return MaterialApp.router(
           routerConfig: _createRouter(authProvider.isLoggedIn),
+=======
+    return GetX<ThemeController>(
+      builder: (themeController) {
+        if (!themeController.isInitialized.value) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+        return GetMaterialApp(
+          getPages: [
+            GetPage(name: '/splash', page: () => const SplashScreen()),
+            GetPage(name: '/login', page: () => const LoginScreen()),
+            GetPage(name: '/signup', page: () => const SignupScreen()),
+            GetPage(name: '/', page: () => const HomeScreen()),
+            GetPage(name: '/jadwal', page: () => const PrayerTimesScreen()),
+            GetPage(name: '/pengaturan', page: () => const SettingsScreen()),
+            GetPage(name: '/lokasi', page: () => const HomeView()),
+            GetPage(
+              name: '/pengumuman',
+              page: () => const AnnouncementListView(),
+            ),
+          ],
+          initialRoute: '/splash',
+>>>>>>> fitur/notifikasi
           title: 'Masjid Sabilillah',
           debugShowCheckedModeBanner: false,
-          theme: _buildLightTheme(),
-          darkTheme: _buildDarkTheme(),
-          themeMode: themeProvider.isDarkMode
+          theme: ThemeData.light().copyWith(
+            colorScheme: ColorScheme.light(primary: AppColors.lightPrimary),
+          ),
+          darkTheme: ThemeData.dark().copyWith(
+            colorScheme: ColorScheme.dark(primary: AppColors.darkPrimary),
+          ),
+          themeMode: themeController.isDarkMode.value
               ? ThemeMode.dark
               : ThemeMode.light,
         );
@@ -150,6 +141,7 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+<<<<<<< HEAD
 
 // Placeholder screens
 class DonasiScreen extends StatelessWidget {
@@ -178,3 +170,5 @@ class LokasiScreen extends StatelessWidget {
     body: const Center(child: Text('Lokasi')),
   );
 }
+=======
+>>>>>>> fitur/notifikasi

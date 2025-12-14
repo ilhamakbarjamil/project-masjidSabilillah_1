@@ -1,46 +1,36 @@
-// lib/presentation/screens/login_screen.dart
+// lib/presentation/screens/signup_screen.dart
 import 'package:flutter/material.dart';
-<<<<<<< HEAD
-import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
-import 'package:masjid_sabilillah/core/providers/auth_provider.dart';
-=======
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'dart:math';
 
-// Import signup screen
-import 'signup_screen.dart';
->>>>>>> fitur/notifikasi
+// Import login screen
+import 'login_screen.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class SignupScreen extends StatefulWidget {
+  const SignupScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<SignupScreen> createState() => _SignupScreenState();
 }
 
-<<<<<<< HEAD
-class _LoginScreenState extends State<LoginScreen> {
-=======
-class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin {
->>>>>>> fitur/notifikasi
+class _SignupScreenState extends State<SignupScreen> with TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
   bool _isLoading = false;
-<<<<<<< HEAD
-  String? _errorMessage;
-=======
   bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
   
   // Variabel untuk animasi mata singa
   late AnimationController _glassesController;
   late Animation<double> _glassesAnimation;
   bool _isEmailFocused = false;
   bool _isPasswordFocused = false;
+  bool _isConfirmPasswordFocused = false;
   double _leftPupilX = 0.0;
   double _leftPupilY = 0.0;
   double _rightPupilX = 0.0;
@@ -78,6 +68,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
     _passwordController.removeListener(_onPasswordChanged);
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     _glassesController.dispose();
     super.dispose();
   }
@@ -158,7 +149,22 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
         } else if (!_obscurePassword && _hasGlasses) {
           _toggleGlasses();
         }
-      } else if (!_isEmailFocused && _hasGlasses) {
+      } else if (!_isEmailFocused && !_isConfirmPasswordFocused && _hasGlasses) {
+        _toggleGlasses();
+      }
+    });
+  }
+
+  void _onConfirmPasswordFocusChanged(bool hasFocus) {
+    setState(() {
+      _isConfirmPasswordFocused = hasFocus;
+      if (hasFocus) {
+        if (_obscureConfirmPassword && !_hasGlasses) {
+          _toggleGlasses();
+        } else if (!_obscureConfirmPassword && _hasGlasses) {
+          _toggleGlasses();
+        }
+      } else if (!_isEmailFocused && !_isPasswordFocused && _hasGlasses) {
         _toggleGlasses();
       }
     });
@@ -190,55 +196,59 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
       }
     }
   }
->>>>>>> fitur/notifikasi
 
-  Future<void> _login() async {
+  Future<void> _signup() async {
     if (!_formKey.currentState!.validate()) return;
+
+    if (_passwordController.text != _confirmPasswordController.text) {
+      Get.snackbar(
+        'Password Tidak Cocok',
+        'Password dan konfirmasi password harus sama',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      return;
+    }
 
     setState(() {
       _isLoading = true;
-<<<<<<< HEAD
-      _errorMessage = null;
-    });
-
-    try {
-      final authProvider = context.read<AuthProvider>();
-      await authProvider.login(
-        _emailController.text.trim(),
-        _passwordController.text.trim(),
-      );
-
-      if (context.mounted) {
-        context.go('/'); // Redirect ke home setelah login
-      }
-    } catch (error) {
-      setState(() {
-        _errorMessage = 'Terjadi kesalahan: ${error.toString()}';
-      });
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-=======
       if (_hasGlasses) {
         _toggleGlasses();
       }
     });
 
     try {
-      await Supabase.instance.client.auth.signInWithPassword(
+      await Supabase.instance.client.auth.signUp(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
 
-      // Redirect ke home screen setelah login berhasil
-      // Ganti '/' dengan HomeScreen Anda
-      Get.offAllNamed('/home');
+      Get.snackbar(
+        'Pendaftaran Berhasil! 🎉',
+        'Silakan cek email Anda untuk verifikasi',
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 5),
+        snackPosition: SnackPosition.BOTTOM,
+      );
+
+      // Kembali ke login setelah 2 detik
+      Future.delayed(const Duration(seconds: 2), () {
+        Get.offAll(() => const LoginScreen());
+      });
     } on AuthException catch (e) {
       Get.snackbar(
-        'Login Gagal',
+        'Pendaftaran Gagal',
         e.message,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 3),
+      );
+    } catch (e) {
+      Get.snackbar(
+        'Error Tidak Terduga',
+        e.toString(),
         backgroundColor: Colors.red,
         colorText: Colors.white,
         snackPosition: SnackPosition.BOTTOM,
@@ -247,266 +257,12 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
->>>>>>> fitur/notifikasi
       }
     }
   }
 
-<<<<<<< HEAD
-  @override
-  Widget build(BuildContext context) {
-    final primaryColor = Theme.of(context).colorScheme.primary;
-    final authProvider = context.watch<AuthProvider>();
-    final isInitializing = authProvider.isInitializing;
-
-    return Scaffold(
-      body: Stack(
-        children: [
-          // Background Gradient
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  primaryColor.withOpacity(0.05),
-                  Colors.white.withOpacity(0.8),
-                ],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-              ),
-            ),
-          ),
-
-          // Konten Login
-          Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Logo Masjid
-                Container(
-                  width: 100,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    color: primaryColor,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: primaryColor.withOpacity(0.3),
-                        blurRadius: 20,
-                        offset: const Offset(0, 6),
-                      ),
-                    ],
-                  ),
-                  child: const Icon(
-                    Icons.mosque,
-                    color: Colors.white,
-                    size: 60,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                Text(
-                  'Masjid Sabilillah',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: primaryColor,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Silakan login untuk melanjutkan',
-                  style: TextStyle(fontSize: 16, color: Colors.grey),
-                ),
-                const SizedBox(height: 40),
-
-                // Form Login
-                Form(
-                  key: _formKey,
-                  child: Column(
-                    children: [
-                      // Email
-                      TextFormField(
-                        controller: _emailController,
-                        decoration: InputDecoration(
-                          labelText: 'Email',
-                          prefixIcon: const Icon(Icons.email),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        keyboardType: TextInputType.emailAddress,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Email wajib diisi';
-                          }
-                          if (!RegExp(
-                            r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
-                          ).hasMatch(value)) {
-                            return 'Format email tidak valid';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Password
-                      TextFormField(
-                        controller: _passwordController,
-                        decoration: InputDecoration(
-                          labelText: 'Password',
-                          prefixIcon: const Icon(Icons.lock),
-                          suffixIcon: const Icon(Icons.visibility_off),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        obscureText: true,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Password wajib diisi';
-                          }
-                          if (value.length < 6) {
-                            return 'Password minimal 6 karakter';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 8),
-
-                      // Error Message
-                      if (_errorMessage != null)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 8),
-                          child: Text(
-                            _errorMessage!,
-                            style: const TextStyle(
-                              color: Colors.red,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ),
-
-                      const SizedBox(height: 24),
-
-                      // Tombol Login
-                            SizedBox(
-                              width: double.infinity,
-                              child: ElevatedButton(
-                                onPressed: (_isLoading || isInitializing) ? null : _login,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: primaryColor,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                                child: isInitializing
-                                    ? const Text('Menyiapkan layanan...')
-                                    : (_isLoading
-                              ? const CircularProgressIndicator(
-                                  color: Colors.white,
-                                )
-                                    : const Text(
-                                        'Login',
-                                        style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      )),
-                        ),
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      // Text Divider
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Container(
-                              height: 1,
-                              color: Colors.grey[300],
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: Text(
-                              'atau',
-                              style: TextStyle(
-                                color: Colors.grey[600],
-                                fontSize: 14,
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            child: Container(
-                              height: 1,
-                              color: Colors.grey[300],
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      // Tombol Daftar
-                      SizedBox(
-                        width: double.infinity,
-                        child: OutlinedButton(
-                          onPressed: isInitializing
-                              ? null
-                              : () {
-                                  context.go('/register');
-                                },
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: primaryColor,
-                            side: BorderSide(color: primaryColor, width: 2),
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          child: const Text(
-                            'Daftar Akun Baru',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 24),
-
-                      // Text "Tidak punya akun?"
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Text(
-                            'Tidak punya akun? ',
-                            style: TextStyle(fontSize: 14, color: Colors.grey),
-                          ),
-                          GestureDetector(
-                            onTap: () {
-                              context.go('/register');
-                            },
-                            child: Text(
-                              'Daftar di sini',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                color: primaryColor,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-=======
-  void _navigateToSignup() {
-    Get.to(() => const SignupScreen());
+  void _navigateToLogin() {
+    Get.to(() => const LoginScreen());
   }
 
   @override
@@ -531,7 +287,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                   children: [
                     // Animated Lion Header - FIXED HEIGHT
                     Container(
-                      height: size.height * 0.35,
+                      height: size.height * 0.30,
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -723,7 +479,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                             ],
                           ),
                           
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 16),
                           
                           // Status text
                           AnimatedSwitcher(
@@ -738,9 +494,9 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                                     ),
                                     textAlign: TextAlign.center,
                                   )
-                                : _isPasswordFocused
+                                : _isPasswordFocused || _isConfirmPasswordFocused
                                     ? Text(
-                                        _obscurePassword
+                                        _obscurePassword || _obscureConfirmPassword
                                             ? 'Singa pakai kacamata, password aman! 😎'
                                             : 'Singa bisa lihat passwordmu! 👁️',
                                         key: ValueKey(_obscurePassword ? 'glasses' : 'no_glasses'),
@@ -753,7 +509,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                                         textAlign: TextAlign.center,
                                       )
                                     : Text(
-                                        'Raaaawr! Selamat datang! 🦁',
+                                        'Bergabunglah dengan Kerajaan! 👑',
                                         key: const ValueKey('welcome'),
                                         style: theme.textTheme.bodyMedium?.copyWith(
                                           color: colors.onSurfaceVariant,
@@ -765,7 +521,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                           const SizedBox(height: 8),
                           
                           Text(
-                            'Masuk ke Kerajaan Akunmu',
+                            'Buat Akun Baru',
                             style: theme.textTheme.titleLarge?.copyWith(
                               fontWeight: FontWeight.bold,
                               color: colors.onBackground,
@@ -783,7 +539,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const SizedBox(height: 20),
+                            const SizedBox(height: 16),
                             
                             // Email Field
                             Focus(
@@ -892,34 +648,85 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                                 },
                               ),
                             ),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: 16),
 
-                            // Forgot Password
-                            Align(
-                              alignment: Alignment.centerRight,
-                              child: TextButton(
-                                onPressed: () {
-                                  Get.snackbar(
-                                    'Fitur Tersedia',
-                                    'Fitur reset password akan segera hadir',
-                                    backgroundColor: colors.primary,
-                                    colorText: Colors.white,
-                                  );
-                                },
-                                style: TextButton.styleFrom(
-                                  foregroundColor: colors.primary,
+                            // Confirm Password Field
+                            Focus(
+                              onFocusChange: _onConfirmPasswordFocusChanged,
+                              child: TextFormField(
+                                controller: _confirmPasswordController,
+                                obscureText: _obscureConfirmPassword,
+                                decoration: InputDecoration(
+                                  labelText: 'Konfirmasi Password',
+                                  prefixIcon: Icon(
+                                    PhosphorIcons.lockKey(PhosphorIconsStyle.light),
+                                    color: _isConfirmPasswordFocused 
+                                        ? colors.primary 
+                                        : colors.onSurfaceVariant,
+                                  ),
+                                  suffixIcon: GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        _obscureConfirmPassword = !_obscureConfirmPassword;
+                                        if (_isConfirmPasswordFocused) {
+                                          if (_obscureConfirmPassword && !_hasGlasses) {
+                                            _toggleGlasses();
+                                          } else if (!_obscureConfirmPassword && _hasGlasses) {
+                                            _toggleGlasses();
+                                          }
+                                        }
+                                      });
+                                    },
+                                    child: AnimatedSwitcher(
+                                      duration: const Duration(milliseconds: 300),
+                                      child: Icon(
+                                        key: ValueKey(_obscureConfirmPassword),
+                                        _obscureConfirmPassword
+                                            ? PhosphorIcons.eyeSlash(PhosphorIconsStyle.light)
+                                            : PhosphorIcons.eye(PhosphorIconsStyle.light),
+                                        color: _isConfirmPasswordFocused 
+                                            ? colors.primary 
+                                            : colors.onSurfaceVariant,
+                                      ),
+                                    ),
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                  filled: true,
+                                  fillColor: _isConfirmPasswordFocused
+                                      ? colors.primary.withOpacity(0.05)
+                                      : colors.surfaceVariant.withOpacity(0.3),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    vertical: 16,
+                                    horizontal: 20,
+                                  ),
                                 ),
-                                child: const Text('Lupa Password?'),
+                                style: theme.textTheme.bodyLarge,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Konfirmasi password wajib diisi';
+                                  }
+                                  if (value != _passwordController.text) {
+                                    return 'Password tidak cocok';
+                                  }
+                                  return null;
+                                },
                               ),
                             ),
+                            const SizedBox(height: 8),
+
+                            // Password Requirements
+                            _buildPasswordRequirements(),
                             const SizedBox(height: 24),
 
-                            // Login Button
+                            // Signup Button
                             SizedBox(
                               width: double.infinity,
                               height: 56,
                               child: ElevatedButton(
-                                onPressed: _isLoading ? null : _login,
+                                onPressed: _isLoading ? null : _signup,
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.orange[700],
                                   foregroundColor: Colors.white,
@@ -942,14 +749,12 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                                         mainAxisAlignment: MainAxisAlignment.center,
                                         children: [
                                           Icon(
-                                            _hasGlasses 
-                                                ? PhosphorIcons.eyeglasses(PhosphorIconsStyle.light)
-                                                : PhosphorIcons.crown(PhosphorIconsStyle.light),
+                                            PhosphorIcons.userPlus(PhosphorIconsStyle.light),
                                             size: 20,
                                           ),
                                           const SizedBox(width: 8),
                                           Text(
-                                            'Masuk ke Kerajaan',
+                                            'Daftar Sekarang',
                                             style: theme.textTheme.bodyLarge?.copyWith(
                                               color: Colors.white,
                                               fontWeight: FontWeight.bold,
@@ -992,12 +797,12 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                             ),
                             const SizedBox(height: 24),
 
-                            // Signup Button - MENGGUNAKAN GETX
+                            // Login Button - MENGGUNAKAN GETX
                             SizedBox(
                               width: double.infinity,
                               height: 56,
                               child: OutlinedButton(
-                                onPressed: _navigateToSignup,
+                                onPressed: _navigateToLogin,
                                 style: OutlinedButton.styleFrom(
                                   foregroundColor: colors.primary,
                                   side: BorderSide(
@@ -1011,12 +816,12 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Icon(
-                                      PhosphorIcons.userPlus(PhosphorIconsStyle.light),
+                                      PhosphorIcons.signIn(PhosphorIconsStyle.light),
                                       size: 20,
                                     ),
                                     const SizedBox(width: 8),
                                     Text(
-                                      'Bergabung dengan Kerajaan',
+                                      'Sudah Punya Akun? Masuk',
                                       style: theme.textTheme.bodyLarge?.copyWith(
                                         fontWeight: FontWeight.w500,
                                       ),
@@ -1050,7 +855,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                               Text(
                                 _hasGlasses
                                     ? 'Mode rahasia aktif! 😎'
-                                    : 'Dilindungi oleh Singa Penjaga',
+                                    : 'Bergabunglah dengan Kerajaan',
                                 style: theme.textTheme.bodySmall?.copyWith(
                                   color: colors.onSurfaceVariant.withOpacity(0.6),
                                 ),
@@ -1074,6 +879,53 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildPasswordRequirements() {
+    final password = _passwordController.text;
+    
+    final hasMinLength = password.length >= 6;
+    final hasUppercase = password.contains(RegExp(r'[A-Z]'));
+    final hasLowercase = password.contains(RegExp(r'[a-z]'));
+    final hasNumbers = password.contains(RegExp(r'[0-9]'));
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Password harus mengandung:',
+          style: TextStyle(
+            fontSize: 12,
+            color: Colors.grey[600],
+          ),
+        ),
+        const SizedBox(height: 4),
+        _buildRequirementItem('Minimal 6 karakter', hasMinLength),
+        _buildRequirementItem('Huruf besar (A-Z)', hasUppercase),
+        _buildRequirementItem('Huruf kecil (a-z)', hasLowercase),
+        _buildRequirementItem('Angka (0-9)', hasNumbers),
+      ],
+    );
+  }
+
+  Widget _buildRequirementItem(String text, bool isMet) {
+    return Row(
+      children: [
+        Icon(
+          isMet ? Icons.check_circle : Icons.radio_button_unchecked,
+          size: 14,
+          color: isMet ? Colors.green : Colors.grey[400],
+        ),
+        const SizedBox(width: 6),
+        Text(
+          text,
+          style: TextStyle(
+            fontSize: 12,
+            color: isMet ? Colors.green : Colors.grey[600],
+          ),
+        ),
+      ],
     );
   }
 }
@@ -1119,7 +971,6 @@ class _LionEye extends StatelessWidget {
                 color: hasGlasses ? Colors.grey[700] : Colors.brown[900],
                 borderRadius: BorderRadius.circular(4),
               ),
->>>>>>> fitur/notifikasi
             ),
           ),
         ],
@@ -1127,8 +978,6 @@ class _LionEye extends StatelessWidget {
     );
   }
 }
-<<<<<<< HEAD
-=======
 
 // Widget untuk kacamata singa
 class _LionGlasses extends StatelessWidget {
@@ -1203,4 +1052,3 @@ class _LionGlasses extends StatelessWidget {
     );
   }
 }
->>>>>>> fitur/notifikasi
