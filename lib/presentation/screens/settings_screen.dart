@@ -3,9 +3,39 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:masjid_sabilillah/core/providers/theme_controller.dart';
 import 'package:get/get.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/services.dart';
+import 'package:masjid_sabilillah/data/services/notification_service.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
+
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  String _fcmToken = '-';
+
+  @override
+  void initState() {
+    super.initState();
+    _initFcmToken();
+  }
+
+  Future<void> _initFcmToken() async {
+    try {
+      final token = await FirebaseMessaging.instance.getToken();
+      setState(() {
+        _fcmToken = token ?? '-';
+      });
+    } catch (e) {
+      setState(() {
+        _fcmToken = 'Gagal mengambil token';
+      });
+    }
+  }
+
 
   Future<void> _logout() async {
     try {
@@ -54,6 +84,41 @@ class SettingsScreen extends StatelessWidget {
               )),
             ),
             const SizedBox(height: 32),
+            // Section: Token FCM (untuk debugging)
+            const Text('Info Perangkat', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 16),
+            Container(
+              decoration: BoxDecoration(
+                color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[900] : Colors.grey[50],
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: primaryColor.withOpacity(0.25)),
+              ),
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Token FCM:', style: TextStyle(fontWeight: FontWeight.bold)),
+                      IconButton(
+                        icon: const Icon(Icons.copy, size: 18),
+                        tooltip: 'Salin token',
+                        onPressed: () {
+                          Clipboard.setData(ClipboardData(text: _fcmToken));
+                          ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Token disalin!')),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  SelectableText(_fcmToken, style: const TextStyle(fontSize: 12)),
+                ],
+              ),
+            ),
+            const SizedBox(height: 30),
             // Section: Akun
             const Text('Akun', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
@@ -73,6 +138,32 @@ class SettingsScreen extends StatelessWidget {
                 ),
                 onTap: () => _showLogoutDialog(),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+              ),
+            ),
+            const SizedBox(height: 16),
+            // Tombol Tes Notifikasi Lokal
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  elevation: 0,
+                  backgroundColor: primaryColor,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                icon: const Icon(Icons.notifications_active),
+                label: const Text('Tes Notifikasi Lokal'),
+                onPressed: () {
+                  NotificationService.showNotification(
+                    RemoteMessage(
+                      notification: RemoteNotification(
+                        title: 'Notifikasi Masjid',
+                        body: 'Ini adalah notifikasi lokal test (bukan FCM)',
+                      ),
+                      data: {},
+                    ),
+                  );
+                },
               ),
             ),
             const Spacer(),

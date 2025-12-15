@@ -14,11 +14,27 @@ import 'package:masjid_sabilillah/core/constants/app_colors.dart';
 // Tambahkan import pengumuman:
 import 'package:masjid_sabilillah/database/features/announcements/views/announcement_list_view.dart';
 
-void main() {
+import 'package:firebase_core/firebase_core.dart';
+import 'package:masjid_sabilillah/data/services/notification_service.dart';
+import 'package:permission_handler/permission_handler.dart';
+
+
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  await NotificationService.init();
+  NotificationService.listenToFirebase();
+
+  // Request notification permission for Android 13+
+  if (await Permission.notification.isDenied) {
+    await Permission.notification.request();
+  }
+
   Get.put(ThemeController());
   runApp(const MyApp());
 }
+
+
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});

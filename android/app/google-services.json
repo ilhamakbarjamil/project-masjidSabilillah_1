@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "192922301468",
+    "project_id": "project-masjid-sabilillah",
+    "storage_bucket": "project-masjid-sabilillah.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:192922301468:android:23356e11ce731ba6f49bd9",
+        "android_client_info": {
+          "package_name": "com.example.masjid_notification_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyARHl32zbpxOCFLQM9TDyARmLEnuKcEuBY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:192922301468:android:9036181196e26b8cf49bd9",
+        "android_client_info": {
+          "package_name": "com.example.masjid_sabilillah"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyARHl32zbpxOCFLQM9TDyARmLEnuKcEuBY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
