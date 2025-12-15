@@ -107,7 +107,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         onPressed: () {
                           Clipboard.setData(ClipboardData(text: _fcmToken));
                           ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Token disalin!')),
+                              const SnackBar(content: Text('Token FCM disalin ke clipboard!')), 
                           );
                         },
                       ),
@@ -115,6 +115,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   const SizedBox(height: 8),
                   SelectableText(_fcmToken, style: const TextStyle(fontSize: 12)),
+                  const SizedBox(height: 14),
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.yellow.withOpacity(0.17),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Text(
+                      'Salin token di atas lalu buka Firebase Console > Cloud Messaging. Pilih "Send test message" dan masukkan token. Pastikan notifikasi muncul. Jika aplikasi foreground, notifikasi tampil sebagai pop-up, kalau background/terminate muncul di tray.',
+                      style: TextStyle(fontSize: 13, color: Colors.black87),
+                    ),
+                  ),
                 ],
               ),
             ),
