@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:masjid_sabilillah/core/constants/app_colors.dart';
 import 'package:masjid_sabilillah/data/models/prayer_time_model.dart';
 import 'package:masjid_sabilillah/data/services/api_service.dart';
+import 'package:masjid_sabilillah/data/services/notification_service.dart';
 import 'package:masjid_sabilillah/data/services/local_storage_service.dart';
 import 'package:masjid_sabilillah/presentation/widgets/common/blue_card.dart';
 import 'package:get/get.dart';
+import 'package:masjid_sabilillah/presentation/widgets/common/prayer_countdown_timer.dart';
 
 class PrayerTimesScreen extends StatelessWidget {
   const PrayerTimesScreen({super.key});
@@ -58,6 +60,8 @@ class PrayerTimesScreen extends StatelessWidget {
           } else if (snapshot.hasData) {
             final prayer = snapshot.data!;
             final prayerList = prayer.prayerList;
+            // Tambahkan: Otomatis jadwalkan notifikasi sholat
+            Future.microtask(() => NotificationService.schedulePrayerNotifications(prayer));
 
             return Padding(
               padding: const EdgeInsets.all(16),
@@ -76,17 +80,36 @@ class PrayerTimesScreen extends StatelessWidget {
                   ...List.generate(prayerList.length, (index) {
                     final item = prayerList[index];
                     return BlueCard(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            item['name']!,
-                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                item['name']!,
+                                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                              ),
+                              Text(
+                                item['time']!,
+                                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                              ),
+                            ],
                           ),
-                          Text(
-                            item['time']!,
-                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                          ),
+                          const SizedBox(height: 6),
+                          Builder(builder: (ctx) {
+                            // Hitung waktu mundur
+                            final now = DateTime.now();
+                            final timeParts = item['time']!.split(':');
+                            final today = DateTime(now.year, now.month, now.day);
+                            DateTime jadwal;
+                            if (timeParts.length == 2) {
+                              jadwal = DateTime(today.year, today.month, today.day, int.tryParse(timeParts[0]) ?? 0, int.tryParse(timeParts[1]) ?? 0);
+                            } else {
+                              jadwal = today;
+                            }
+                            return PrayerCountdownTimer(jadwal: jadwal);
+                          }),
                         ],
                       ),
                     );
