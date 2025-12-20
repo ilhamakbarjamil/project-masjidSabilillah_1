@@ -36,7 +36,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-
   Future<void> _logout() async {
     try {
       await Supabase.instance.client.auth.signOut();
@@ -50,164 +49,177 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     final primaryColor = Theme.of(context).colorScheme.primary;
     final themeController = Get.find<ThemeController>();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Pengaturan'),
-        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
-        foregroundColor: Theme.of(context).appBarTheme.foregroundColor,
+        centerTitle: true,
+        elevation: 0,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Section: Tampilan
-            const Text(
-              'Tampilan',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            Container(
-              decoration: BoxDecoration(
-                color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[800] : Colors.grey[100],
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: primaryColor.withOpacity(0.3)),
+      // Perbaikan: Menggunakan SingleChildScrollView untuk menghindari overflow
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Section: Tampilan
+              _buildSectionTitle('Tampilan'),
+              const SizedBox(height: 12),
+              _buildSettingCard(
+                child: Obx(() => SwitchListTile(
+                      title: const Text('Tema Gelap', style: TextStyle(fontWeight: FontWeight.w500)),
+                      value: themeController.isDarkMode.value,
+                      activeColor: primaryColor,
+                      onChanged: (bool value) {
+                        themeController.toggleTheme(value);
+                      },
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                    )),
               ),
-              child: Obx(() => SwitchListTile(
-                title: const Text('Tema Gelap'),
-                value: themeController.isDarkMode.value,
-                activeColor: primaryColor,
-                onChanged: (bool value) {
-                  themeController.toggleTheme(value);
-                },
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-              )),
-            ),
-            const SizedBox(height: 32),
-            // Section: Token FCM (untuk debugging)
-            const Text('Info Perangkat', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 16),
-            Container(
-              decoration: BoxDecoration(
-                color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[900] : Colors.grey[50],
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: primaryColor.withOpacity(0.25)),
-              ),
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('Token FCM:', style: TextStyle(fontWeight: FontWeight.bold)),
-                      IconButton(
-                        icon: const Icon(Icons.copy, size: 18),
-                        tooltip: 'Salin token',
-                        onPressed: () {
-                          Clipboard.setData(ClipboardData(text: _fcmToken));
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Token FCM disalin ke clipboard!')), 
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  SelectableText(_fcmToken, style: const TextStyle(fontSize: 12)),
-                  const SizedBox(height: 14),
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.yellow.withOpacity(0.17),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: const Text(
-                      'Salin token di atas lalu buka Firebase Console > Cloud Messaging. Pilih "Send test message" dan masukkan token. Pastikan notifikasi muncul. Jika aplikasi foreground, notifikasi tampil sebagai pop-up, kalau background/terminate muncul di tray.',
-                      style: TextStyle(fontSize: 13, color: Colors.black87),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 30),
-            // Section: Akun
-            const Text('Akun', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 16),
-            Container(
-              decoration: BoxDecoration(
-                color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[800] : Colors.grey[100],
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: primaryColor.withOpacity(0.3)),
-              ),
-              child: ListTile(
-                title: const Text('Logout', style: TextStyle(color: Colors.red, fontWeight: FontWeight.w600)),
-                leading: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(color: Colors.red.withOpacity(0.1), shape: BoxShape.circle),
-                  child: const Icon(Icons.logout, color: Colors.red, size: 24),
-                ),
-                onTap: () => _showLogoutDialog(),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-              ),
-            ),
-            const SizedBox(height: 16),
-            // Tombol Tes Notifikasi Lokal
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  elevation: 0,
-                  backgroundColor: primaryColor,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                icon: const Icon(Icons.notifications_active),
-                label: const Text('Tes Notifikasi Lokal'),
-                onPressed: () {
-                  NotificationService.showNotification(
-                    RemoteMessage(
-                      notification: RemoteNotification(
-                        title: 'Notifikasi Masjid',
-                        body: 'Ini adalah notifikasi lokal test (bukan FCM)',
-                      ),
-                      data: {},
-                    ),
-                  );
-                },
-              ),
-            ),
-            const Spacer(),
-            // TOMBOL KEMBALI KE HOME
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(colors: [primaryColor.withOpacity(0.8), primaryColor], begin: Alignment.topLeft, end: Alignment.bottomRight),
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: primaryColor.withOpacity(0.3),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: TextButton(
-                onPressed: () => Get.offAllNamed('/'),
-                style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16), backgroundColor: primaryColor, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+
+              const SizedBox(height: 24),
+
+              // Section: Info Perangkat
+              _buildSectionTitle('Info Perangkat'),
+              const SizedBox(height: 12),
+              _buildSettingCard(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.home, color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.white, size: 24,),
-                    const SizedBox(width: 8),
-                    Text('Kembali ke Home', style: TextStyle(color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('Token FCM:', style: TextStyle(fontWeight: FontWeight.bold)),
+                        IconButton(
+                          icon: const Icon(Icons.copy, size: 20),
+                          constraints: const BoxConstraints(),
+                          padding: EdgeInsets.zero,
+                          tooltip: 'Salin token',
+                          onPressed: () {
+                            Clipboard.setData(ClipboardData(text: _fcmToken));
+                            Get.snackbar(
+                              'Berhasil', 
+                              'Token FCM disalin ke clipboard!',
+                              snackPosition: SnackPosition.BOTTOM,
+                              backgroundColor: Colors.green.withOpacity(0.8),
+                              colorText: Colors.white,
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    SelectableText(
+                      _fcmToken,
+                      style: TextStyle(fontSize: 11, color: isDark ? Colors.grey[400] : Colors.grey[700], fontFamily: 'monospace'),
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.amber.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.amber.withOpacity(0.3)),
+                      ),
+                      child: const Text(
+                        'Gunakan token ini untuk testing push notification di Firebase Console.',
+                        style: TextStyle(fontSize: 12, color: Colors.orange),
+                      ),
+                    ),
                   ],
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-          ],
+
+              const SizedBox(height: 24),
+
+              // Section: Akun & Aksi
+              _buildSectionTitle('Akun & Aksi'),
+              const SizedBox(height: 12),
+              _buildSettingCard(
+                child: Column(
+                  children: [
+                    ListTile(
+                      leading: const Icon(Icons.notifications_active, color: Colors.blue),
+                      title: const Text('Tes Notifikasi Lokal'),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () {
+                        NotificationService.showNotification(
+                          RemoteMessage(
+                            notification: RemoteNotification(
+                              title: 'Notifikasi Masjid',
+                              body: 'Ini adalah notifikasi lokal test (bukan FCM)',
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    const Divider(height: 1),
+                    ListTile(
+                      leading: const Icon(Icons.logout, color: Colors.red),
+                      title: const Text('Logout', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                      onTap: () => _showLogoutDialog(),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 40),
+
+              // Tombol Kembali Ke Home
+              SizedBox(
+                width: double.infinity,
+                height: 55,
+                child: ElevatedButton.icon(
+                  onPressed: () => Get.offAllNamed('/'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primaryColor,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    elevation: 2,
+                  ),
+                  icon: const Icon(Icons.home),
+                  label: const Text('KEMBALI KE BERANDA', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.1)),
+                ),
+              ),
+              const SizedBox(height: 30), // Padding bawah agar tidak mepet
+            ],
+          ),
         ),
+      ),
+    );
+  }
+
+  // Widget Helper untuk Judul Section
+  Widget _buildSectionTitle(String title) {
+    return Text(
+      title,
+      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey),
+    );
+  }
+
+  // Widget Helper untuk Card Container
+  Widget _buildSettingCard({required Widget child, EdgeInsetsGeometry? padding}) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      padding: padding,
+      decoration: BoxDecoration(
+        color: isDark ? Colors.grey[900] : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+        border: Border.all(color: isDark ? Colors.grey[800]! : Colors.grey[200]!),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: child,
       ),
     );
   }
@@ -215,16 +227,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void _showLogoutDialog() {
     Get.defaultDialog(
       title: 'Konfirmasi Logout',
+      titlePadding: const EdgeInsets.only(top: 20),
+      contentPadding: const EdgeInsets.all(20),
       middleText: 'Apakah Anda yakin ingin keluar dari akun?',
       textCancel: 'Batal',
-      textConfirm: 'Logout',
+      textConfirm: 'Ya, Keluar',
       confirmTextColor: Colors.white,
+      buttonColor: Colors.red,
       onConfirm: () {
         Get.back();
         _logout();
       },
-      cancelTextColor: Colors.blue,
-      onCancel: () {},
+      cancelTextColor: Colors.grey,
     );
   }
 }
