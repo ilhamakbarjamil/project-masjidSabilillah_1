@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:get/get.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -59,10 +60,8 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
   Future<void> _initializeApp() async {
     try {
-      // 1. Load .env
       await dotenv.load(fileName: ".env");
 
-      // 2. Ambil kredensial
       final supabaseUrl = dotenv.env['SUPABASE_URL'];
       final supabaseKey = dotenv.env['SUPABASE_ANON_KEY'];
 
@@ -70,26 +69,22 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
         throw Exception('File .env tidak terisi dengan benar');
       }
 
-      // 3. Initialize Supabase
       await Supabase.initialize(
         url: supabaseUrl,
         anonKey: supabaseKey,
       );
 
-      // 4. Cek session
       final supabase = Supabase.instance.client;
       final session = supabase.auth.currentSession;
 
-      // 5. Delay minimal 2 detik agar animasi sempurna
-      await Future.delayed(const Duration(milliseconds: 2000));
+      // Delay minimal 2.5 detik agar animasi terlihat sempurna
+      await Future.delayed(const Duration(milliseconds: 2500));
 
-      // ✅ Redirect ke HOME jika sudah login, ke LOGIN jika belum
       if (mounted) {
         Get.offAllNamed(session != null ? '/' : '/login');
       }
     } catch (e) {
-      print('🔥 SPLASH ERROR: $e');
-      // Fallback: redirect ke login
+      debugPrint('🔥 SPLASH ERROR: $e');
       if (mounted) {
         Get.offAllNamed('/login');
       }
@@ -104,14 +99,19 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
   @override
   Widget build(BuildContext context) {
+    const primaryColor = Color(0xFF00695C);
+    const secondaryColor = Color(0xFF004D40);
+
     return Scaffold(
       body: Container(
+        width: double.infinity,
+        height: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              Color(0xFF0A2647),
-              Color(0xFF144272),
-              Color(0xFF205295),
+              primaryColor,
+              secondaryColor,
+              Color(0xFF002B26),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -119,60 +119,45 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
         ),
         child: Stack(
           children: [
-            // Background Pattern
-            Positioned.fill(
-              child: Opacity(
-                opacity: 0.05,
-                child: Image.asset(
-                  'assets/images/islamic_pattern.png', // Optional: add pattern
-                  repeat: ImageRepeat.repeat,
-                  errorBuilder: (context, error, stackTrace) => const SizedBox(),
-                ),
-              ),
-            ),
-
-            // Main Content
             Center(
               child: FadeTransition(
                 opacity: _fadeAnimation,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Logo dengan animasi
+                    // Logo Kubah Masjid
                     ScaleTransition(
                       scale: _scaleAnimation,
                       child: Container(
-                        width: 140,
-                        height: 140,
+                        width: 150,
+                        height: 150,
                         decoration: BoxDecoration(
                           color: Colors.white,
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.15),
-                              blurRadius: 40,
-                              spreadRadius: 5,
-                              offset: const Offset(0, 15),
+                              color: Colors.black.withOpacity(0.2),
+                              blurRadius: 30,
+                              offset: const Offset(0, 10),
                             ),
                             BoxShadow(
-                              color: const Color(0xFF205295).withOpacity(0.3),
-                              blurRadius: 60,
-                              spreadRadius: 10,
-                              offset: const Offset(0, 20),
+                              color: Colors.tealAccent.withOpacity(0.2), // PERBAIKAN DI SINI
+                              blurRadius: 40,
+                              spreadRadius: 2,
                             ),
                           ],
                         ),
                         child: const Icon(
-                          Icons.mosque,
-                          color: Color(0xFF144272),
-                          size: 70,
+                          PhosphorIconsFill.mosque,
+                          color: primaryColor,
+                          size: 80,
                         ),
                       ),
                     ),
 
-                    const SizedBox(height: 48),
+                    const SizedBox(height: 40),
 
-                    // Teks dengan animasi slide
+                    // Teks Nama Masjid
                     SlideTransition(
                       position: _slideAnimation,
                       child: Column(
@@ -180,55 +165,62 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                           const Text(
                             'Masjid Sabilillah',
                             style: TextStyle(
-                              fontSize: 32,
+                              fontSize: 34,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
-                              letterSpacing: 1.2,
+                              letterSpacing: 1.5,
                               shadows: [
                                 Shadow(
-                                  color: Colors.black26,
-                                  offset: Offset(0, 2),
-                                  blurRadius: 8,
+                                  color: Colors.black38,
+                                  offset: Offset(0, 3),
+                                  blurRadius: 10,
                                 ),
                               ],
                             ),
                           ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Manajemen Digital Modern',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.white.withOpacity(0.8),
-                              letterSpacing: 0.5,
+                          const SizedBox(height: 10),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              'MANAJEMEN DIGITAL MASJID',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white.withOpacity(0.9),
+                                letterSpacing: 2.0,
+                              ),
                             ),
                           ),
                         ],
                       ),
                     ),
 
-                    const SizedBox(height: 60),
+                    const SizedBox(height: 80),
 
-                    // Loading indicator modern
+                    // Loading Indicator
                     FadeTransition(
                       opacity: _fadeAnimation,
                       child: Column(
                         children: [
-                          SizedBox(
-                            width: 40,
-                            height: 40,
+                          const SizedBox(
+                            width: 28,
+                            height: 28,
                             child: CircularProgressIndicator(
-                              strokeWidth: 3,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                Colors.white.withOpacity(0.9),
-                              ),
+                              strokeWidth: 2.5,
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white70),
                             ),
                           ),
                           const SizedBox(height: 20),
                           Text(
-                            'Mempersiapkan aplikasi...',
+                            'Memulai Aplikasi...',
                             style: TextStyle(
-                              color: Colors.white.withOpacity(0.7),
+                              color: Colors.white.withOpacity(0.6),
                               fontSize: 13,
+                              fontStyle: FontStyle.italic,
                               letterSpacing: 0.5,
                             ),
                           ),
@@ -240,21 +232,31 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
               ),
             ),
 
-            // Version info di bottom
             Positioned(
               bottom: 40,
               left: 0,
               right: 0,
               child: FadeTransition(
                 opacity: _fadeAnimation,
-                child: Text(
-                  'Version 1.0.0',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.5),
-                    fontSize: 12,
-                    letterSpacing: 0.5,
-                  ),
+                child: Column(
+                  children: [
+                    Text(
+                      '© 2024 Masjid Sabilillah',
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.5),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'v1.0.0',
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.3),
+                        fontSize: 10,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),

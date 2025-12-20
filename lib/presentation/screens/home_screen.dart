@@ -1,9 +1,9 @@
 // lib/presentation/screens/home_screen.dart
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:get/get.dart';
-import 'package:masjid_sabilillah/presentation/widgets/animated/fade_in_widget.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:intl/intl.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -14,6 +14,8 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   String? _userName;
+  final primaryColor = const Color(0xFF00695C);
+  final accentColor = const Color(0xFF004D40);
 
   @override
   void initState() {
@@ -25,199 +27,156 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       final user = Supabase.instance.client.auth.currentUser;
       if (user != null && user.email != null) {
-        // HILANGKAN @domain.com dari email
         final name = user.email!.split('@')[0];
-        // Kapitalisasi huruf pertama
         final formattedName = name[0].toUpperCase() + name.substring(1);
-        if (mounted) {
-          setState(() {
-            _userName = formattedName;
-          });
-        }
+        if (mounted) setState(() => _userName = formattedName);
       }
     } catch (e) {
       debugPrint('Error load user: $e');
     }
   }
 
+  String _getGreeting() {
+    var hour = DateTime.now().hour;
+    if (hour < 11) return 'Selamat Pagi';
+    if (hour < 15) return 'Selamat Siang';
+    if (hour < 18) return 'Selamat Sore';
+    return 'Selamat Malam';
+  }
+
   @override
   Widget build(BuildContext context) {
-    final width = Get.width;
-    final isTablet = width >= 600;
-    final primaryColor = Get.theme.colorScheme.primary;
-
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Scaffold(
-      body: Stack(
-        children: [
-          // Foto Background Masjid
-          Positioned.fill(
-            child: CachedNetworkImage(
-              imageUrl: 'https://images.unsplash.com/photo-1590658268037-6bf12165a62f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80',
-              fit: BoxFit.cover,
-              placeholder: (context, url) => Container(color: primaryColor.withOpacity(0.3)),
-              errorWidget: (context, url, error) => Container(color: primaryColor.withOpacity(0.3)),
-            ),
-          ),
-
-          // Overlay Gradien
-          Positioned.fill(
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    primaryColor.withOpacity(0.7),
-                    Colors.black.withOpacity(0.5),
+      backgroundColor: isDark ? const Color(0xFF0F1716) : const Color(0xFFF5F7F7),
+      body: CustomScrollView(
+        slivers: [
+          // 1. APP BAR MODERN
+          SliverAppBar(
+            expandedHeight: 180.0,
+            floating: false,
+            pinned: true,
+            elevation: 0,
+            backgroundColor: primaryColor,
+            flexibleSpace: FlexibleSpaceBar(
+              background: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [primaryColor, accentColor],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
+                child: Stack(
+                  children: [
+                    // Pattern Islami Transparan
+                    Positioned(
+                      right: -50,
+                      top: -20,
+                      child: Opacity(
+                        opacity: 0.1,
+                        child: Icon(PhosphorIcons.mosque(), size: 250, color: Colors.white),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Assalamu\'alaikum,',
+                            style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 16),
+                          ),
+                          Text(
+                            _userName ?? 'Hamba Allah',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 26,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 25),
+                        ],
+                      ),
+                    ),
                   ],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
                 ),
               ),
             ),
+            actions: [
+              IconButton(
+                onPressed: () => Get.toNamed('/pengaturan'),
+                icon: const Icon(PhosphorIconsFill.gearSix, color: Colors.white),
+              ),
+              const SizedBox(width: 8),
+            ],
           ),
 
-          // Konten Utama
-          SingleChildScrollView(
-            child: Column(
-              children: [
-                // Hero Section
-                Container(
-                  padding: EdgeInsets.only(
-                    top: Get.mediaQuery.padding.top + 40,
-                    bottom: 40,
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 2. KARTU JADWAL SHOLAT (Next Prayer Highlight)
+                  _buildNextPrayerCard(isDark),
+
+                  const SizedBox(height: 30),
+
+                  // 3. MENU GRID
+                  const Text(
+                    'Layanan Masjid',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
-                  alignment: Alignment.center,
-                  child: Column(
+                  const SizedBox(height: 16),
+                  GridView.count(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    crossAxisCount: 2,
+                    mainAxisSpacing: 16,
+                    crossAxisSpacing: 16,
+                    childAspectRatio: 1.1,
                     children: [
-                      // Logo Masjid
-                      Container(
-                        width: isTablet ? 140 : 120,
-                        height: isTablet ? 140 : 120,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
-                              blurRadius: 24,
-                              offset: const Offset(0, 8),
-                            ),
-                          ],
-                        ),
-                        child: Icon(
-                          Icons.mosque,
-                          color: primaryColor,
-                          size: isTablet ? 72 : 60,
-                        ),
+                      _buildMenuCard(
+                        'Jadwal Sholat',
+                        PhosphorIconsFill.clock,
+                        Colors.blue,
+                        '/jadwal',
+                        isDark,
                       ),
-                      const SizedBox(height: 24),
-                      // Judul
-                      Text(
-                        'Masjid Sabilillah',
-                        style: TextStyle(
-                          fontSize: isTablet ? 36 : 28,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          shadows: [
-                            Shadow(
-                              blurRadius: 10,
-                              color: Colors.black.withOpacity(0.3),
-                              offset: const Offset(2, 2),
-                            ),
-                          ],
-                        ),
-                        textAlign: TextAlign.center,
+                      _buildMenuCard(
+                        'Infaq/Donasi',
+                        PhosphorIconsFill.handHeart,
+                        Colors.orange,
+                        '/donasi',
+                        isDark,
                       ),
-                      const SizedBox(height: 8),
-                      // NAMA PENGGUNA (tanpa @gmail.com)
-                      if (_userName != null)
-                        Text(
-                          'Halo, $_userName',
-                          style: const TextStyle(
-                            fontSize: 18,
-                            color: Colors.white70,
-                            fontWeight: FontWeight.w500,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Tempat Beribadah & Silaturahmi',
-                        style: TextStyle(
-                          fontSize: isTablet ? 20 : 16,
-                          color: Colors.white70,
-                        ),
-                        textAlign: TextAlign.center,
+                      _buildMenuCard(
+                        'Pengumuman',
+                        PhosphorIconsFill.megaphone,
+                        Colors.purple,
+                        '/pengumuman',
+                        isDark,
+                      ),
+                      _buildMenuCard(
+                        'Lokasi',
+                        PhosphorIconsFill.mapPin,
+                        Colors.red,
+                        '/lokasi',
+                        isDark,
                       ),
                     ],
                   ),
-                ),
 
-                // Daftar Fitur
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                  child: Column(
-                    children: [
-                      _buildFeatureCard(
-                        icon: Icons.alarm,
-                        title: 'Jadwal Sholat',
-                        route: '/jadwal',
-                        delay: 300,
-                        color: Colors.blue[300]!,
-                      ),
-                      const SizedBox(height: 16),
-                      _buildFeatureCard(
-                        icon: Icons.location_on,
-                        title: 'Lokasi Masjid',
-                        route: '/lokasi',
-                        delay: 400,
-                        color: Colors.green[300]!,
-                      ),
-                      const SizedBox(height: 16),
-                      _buildFeatureCard(
-                        icon: Icons.volunteer_activism,
-                        title: 'Donasi',
-                        route: '/donasi',
-                        delay: 500,
-                        color: Colors.orange[300]!,
-                      ),
-                      const SizedBox(height: 16),
-                      _buildFeatureCard(
-                        icon: Icons.notifications_active,
-                        title: 'Pengumuman',
-                        route: '/pengumuman',
-                        delay: 600,
-                        color: Colors.purple[300]!,
-                      ),
-                    ],
-                  ),
-                ),
+                  const SizedBox(height: 30),
 
-                const SizedBox(height: 60),
-              ],
-            ),
-          ),
-
-          // ✅ TOMBOL PENGATURAN (DI POSISI PALING ATAS DENGAN GESTURE DETECTOR)
-          Positioned(
-            top: Get.mediaQuery.padding.top + 16,
-            right: 16,
-            child: GestureDetector(
-              onTap: () {
-                debugPrint('Tombol pengaturan ditekan');
-                Get.toNamed('/pengaturan');
-              },
-              child: Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.3),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.settings,
-                  color: Colors.white,
-                  size: 24,
-                ),
+                  // 4. SECTION INFORMASI/KUTIPAN
+                  _buildQuoteSection(isDark),
+                  
+                  const SizedBox(height: 40),
+                ],
               ),
             ),
           ),
@@ -226,67 +185,127 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildFeatureCard({
-    required IconData icon,
-    required String title,
-    required String route,
-    required int delay,
-    required Color color,
-  }) {
-    final isTablet = Get.width >= 600;
-    final primaryColor = Get.theme.colorScheme.primary;
-
-    return FadeInWidget(
-      delay: Duration(milliseconds: delay),
-      child: GestureDetector(
-        onTap: () => Get.toNamed(route),
-        child: Container(
-          margin: const EdgeInsets.symmetric(vertical: 4),
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-          decoration: BoxDecoration(
-            color: Get.theme.brightness == Brightness.dark
-                ? Colors.grey[900]?.withOpacity(0.95)
-                : Colors.white.withOpacity(0.95),
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 16,
-                offset: const Offset(0, 6),
-              ),
-            ],
-            border: Border.all(color: color.withOpacity(0.4)),
+  // WIDGET: Kartu Sholat Berikutnya
+  Widget _buildNextPrayerCard(bool isDark) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: isDark ? Colors.grey[900] : Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 15,
+            offset: const Offset(0, 10),
           ),
-          child: Row(
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: isTablet ? 60 : 50,
-                height: isTablet ? 60 : 50,
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.2),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(icon, color: color, size: isTablet ? 30 : 26),
+              Row(
+                children: [
+                  Icon(PhosphorIconsFill.info, size: 16, color: primaryColor),
+                  const SizedBox(width: 8),
+                  const Text('Sholat Berikutnya', style: TextStyle(fontWeight: FontWeight.w500)),
+                ],
               ),
-              const SizedBox(width: 20),
-              Expanded(
-                child: Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: isTablet ? 20 : 18,
-                    fontWeight: FontWeight.w600,
-                    color: primaryColor,
-                  ),
-                ),
+              const SizedBox(height: 8),
+              Text(
+                'Dzuhur',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: primaryColor),
               ),
-              Icon(
-                Icons.arrow_forward_ios,
-                color: primaryColor.withOpacity(0.6),
-                size: isTablet ? 20 : 16,
-              ),
+              const Text('11:45 WIB', style: TextStyle(fontSize: 16, color: Colors.grey)),
             ],
           ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: primaryColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
+              children: [
+                Text('Sisa Waktu', style: TextStyle(fontSize: 10, color: primaryColor)),
+                const Text('-02:15:00', style: TextStyle(fontWeight: FontWeight.bold)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // WIDGET: Kartu Menu Grid
+  Widget _buildMenuCard(String title, IconData icon, Color color, String route, bool isDark) {
+    return InkWell(
+      onTap: () => Get.toNamed(route),
+      borderRadius: BorderRadius.circular(24),
+      child: Container(
+        decoration: BoxDecoration(
+          color: isDark ? Colors.grey[900] : Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: isDark ? Colors.grey[800]! : Colors.grey[200]!),
         ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: 30),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              title,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // WIDGET: Section Kutipan/Quote
+  Widget _buildQuoteSection(bool isDark) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [primaryColor.withOpacity(0.8), primaryColor],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Column(
+        children: [
+          const Icon(PhosphorIconsFill.quotes, color: Colors.white, size: 32),
+          const SizedBox(height: 12),
+          const Text(
+            '"Sebaik-baik manusia adalah yang paling bermanfaat bagi orang lain."',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontStyle: FontStyle.italic,
+              height: 1.5,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            '(HR. Ahmad)',
+            style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 12),
+          ),
+        ],
       ),
     );
   }
