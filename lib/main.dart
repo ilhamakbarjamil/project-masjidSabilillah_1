@@ -7,6 +7,7 @@ import 'package:masjid_sabilillah/presentation/screens/signup_screen.dart';
 import 'package:masjid_sabilillah/presentation/screens/home_screen.dart';
 import 'package:masjid_sabilillah/presentation/screens/prayer_times_screen.dart';
 import 'package:masjid_sabilillah/presentation/screens/settings_screen.dart';
+import 'package:masjid_sabilillah/presentation/screens/notification_test_screen.dart';
 import 'package:masjid_sabilillah/lokasi/views/home_view.dart';
 // Tambahkan import GetX controller utama bila perlu
 import 'package:masjid_sabilillah/core/providers/theme_controller.dart';
@@ -90,6 +91,10 @@ class MyApp extends StatelessWidget {
             GetPage(
               name: '/pengumuman',
               page: () => const AnnouncementListView(),
+            ),
+            GetPage(
+              name: '/notification-test',
+              page: () => const NotificationTestScreen(),
             ),
           ],
           initialRoute: '/splash',

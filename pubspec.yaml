@@ -40,6 +40,7 @@ dependencies:
   firebase_core: ^4.2.1               # [cite: 269]
   firebase_messaging: ^16.0.4         # [cite: 318]
   flutter_local_notifications: ^17.2.3 # [cite: 374]
+  timezone: ^0.9.4                     # Untuk schedule notifikasi dengan timezone
 
 dev_dependencies:
   flutter_test:
