@@ -93,7 +93,7 @@ class MyApp extends StatelessWidget {
             ),
           ],
           initialRoute: '/splash',
-          title: 'Masjid Sabilillah',
+          title: 'MySabilillah',
           debugShowCheckedModeBanner: false,
           theme: ThemeData.light().copyWith(
             colorScheme: ColorScheme.light(primary: AppColors.lightPrimary),
