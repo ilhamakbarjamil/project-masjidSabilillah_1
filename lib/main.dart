@@ -18,23 +18,36 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:masjid_sabilillah/data/services/notification_service.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-  await NotificationService.init();
-  NotificationService.listenToFirebase();
 
-  // Request notification permission for Android 13+
-  if (await Permission.notification.isDenied) {
-    await Permission.notification.request();
+  // Initialize Firebase
+  try {
+    await Firebase.initializeApp();
+  } catch (e) {
+    print('❌ Firebase init error: $e');
+  }
+
+  // Initialize Notification Service
+  try {
+    await NotificationService.init();
+    NotificationService.listenToFirebase();
+  } catch (e) {
+    print('❌ NotificationService error: $e');
+  }
+
+  // Request notification permission untuk Android 13+ (non-blocking)
+  try {
+    if (await Permission.notification.isDenied) {
+      await Permission.notification.request();
+    }
+  } catch (e) {
+    print('⚠️ Permission request error: $e');
   }
 
   Get.put(ThemeController());
   runApp(const MyApp());
 }
-
-
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -43,9 +56,26 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetX<ThemeController>(
       builder: (themeController) {
+        // Jika belum initialized setelah 5 detik, tampilkan app dengan default theme
         if (!themeController.isInitialized.value) {
+          // Fallback: force mark as initialized setelah 5 detik untuk mencegah stuck
+          Future.delayed(const Duration(seconds: 5), () {
+            if (!themeController.isInitialized.value) {
+              themeController.isInitialized.value = true;
+            }
+          });
+
           return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 16),
+                  Text('Memuat aplikasi...'),
+                ],
+              ),
+            ),
           );
         }
         return GetMaterialApp(

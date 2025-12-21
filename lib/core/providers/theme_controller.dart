@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:masjid_sabilillah/data/services/local_storage_service.dart';
 
@@ -13,8 +14,23 @@ class ThemeController extends GetxController {
   }
 
   Future<void> _loadTheme() async {
-    isDarkMode.value = await _storageService.getTheme();
-    isInitialized.value = true;
+    try {
+      // Tambahkan timeout untuk mencegah stuck indefinitely
+      final theme = await _storageService.getTheme().timeout(
+        const Duration(seconds: 5),
+        onTimeout: () {
+          if (kDebugMode)
+            print('⚠️ LocalStorage timeout, menggunakan default theme');
+          return false;
+        },
+      );
+      isDarkMode.value = theme;
+    } catch (e) {
+      if (kDebugMode) print('❌ Error loading theme: $e');
+      isDarkMode.value = false; // Default ke light theme jika error
+    } finally {
+      isInitialized.value = true; // Pastikan always mark as initialized
+    }
   }
 
   void toggleTheme(bool isDark) {
@@ -32,6 +48,3 @@ class ThemeController extends GetxController {
     }
   }
 }
-
-
-
