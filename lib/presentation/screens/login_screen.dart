@@ -4,7 +4,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'dart:math';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -90,7 +89,6 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final primaryColor = const Color(0xFF00695C); // Hijau Masjid
-    final accentColor = const Color(0xFFC69C35); // Emas
 
     return Scaffold(
       backgroundColor: theme.brightness == Brightness.dark ? const Color(0xFF121212) : Colors.grey[50],

@@ -58,6 +58,7 @@ dev_dependencies:
   permission_handler: ^11.3.1
   flutter_map: ^7.0.2
   latlong2: ^0.9.1
+  connectivity_plus: ^5.0.0  # Untuk network diagnostics
 
   # Modul 4: Penyimpanan Lokal
   shared_preferences: ^2.2.2

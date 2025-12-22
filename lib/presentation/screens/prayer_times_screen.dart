@@ -1,7 +1,7 @@
 // lib/presentation/screens/prayer_times_screen.dart
 import 'package:flutter/material.dart';
 import 'package:masjid_sabilillah/data/models/prayer_time_model.dart';
-import 'package:masjid_sabilillah/data/services/api_service.dart';
+import 'package:masjid_sabilillah/data/services/cached_api_service.dart';
 import 'package:masjid_sabilillah/data/services/notification_service.dart';
 import 'package:masjid_sabilillah/data/services/local_storage_service.dart';
 import 'package:masjid_sabilillah/core/constants/indonesian_cities.dart';
@@ -18,6 +18,7 @@ class PrayerTimesScreen extends StatefulWidget {
 class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
   late String _selectedCity;
   late Future<PrayerTime> _futurePrayer;
+  final _cachedApiService = CachedApiService();
 
   @override
   void initState() {
@@ -37,7 +38,8 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
   }
 
   Future<PrayerTime> _fetchPrayerTimes() async {
-    return ApiService().getPrayerTimes(city: _selectedCity);
+    await _cachedApiService.init();
+    return _cachedApiService.getPrayerTimesWithCache(city: _selectedCity);
   }
 
   void _onCityChanged(String? newCity) {
@@ -291,22 +293,113 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
 
   // Widget: Error State
   Widget _buildErrorState(Color primaryColor) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(PhosphorIcons.warningCircle(), color: Colors.red, size: 60),
-          const SizedBox(height: 16),
-          const Text('Gagal memuat jadwal sholat', style: TextStyle(fontSize: 16)),
-          const SizedBox(height: 20),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: primaryColor),
-            onPressed: () => setState(() {
-              _futurePrayer = _fetchPrayerTimes();
-            }),
-            child: const Text('Coba Lagi'),
+    return SingleChildScrollView(
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 40.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Icon
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.red.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  PhosphorIcons.warningCircle(), 
+                  color: Colors.red, 
+                  size: 60
+                ),
+              ),
+              const SizedBox(height: 24),
+              
+              // Title
+              const Text(
+                'Gagal memuat jadwal sholat',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              
+              // Requirements
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.grey[100],
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(PhosphorIcons.wifiHigh(), color: Colors.orange, size: 18),
+                        const SizedBox(width: 8),
+                        const Expanded(child: Text('Internet stabil')),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Icon(PhosphorIcons.mapPin(), color: Colors.orange, size: 18),
+                        const SizedBox(width: 8),
+                        const Expanded(child: Text('GPS/Lokasi aktif')),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Icon(PhosphorIcons.building(), color: Colors.orange, size: 18),
+                        const SizedBox(width: 8),
+                        const Expanded(child: Text('Coba ganti kota')),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+              
+              // Retry Button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primaryColor,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                  onPressed: () {
+                    debugPrint('[PrayerTimesScreen] User clicked Coba Lagi');
+                    setState(() {
+                      _futurePrayer = _fetchPrayerTimes();
+                    });
+                  },
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Coba Lagi'),
+                ),
+              ),
+              const SizedBox(height: 12),
+              
+              // Back Button
+              SizedBox(
+                width: double.infinity,
+                child: TextButton.icon(
+                  onPressed: () {
+                    debugPrint('[PrayerTimesScreen] User clicked Kembali ke Home');
+                    Get.offNamed('/');
+                  },
+                  icon: const Icon(Icons.arrow_back),
+                  label: const Text('Kembali ke Home'),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- Config untuk api.aladhan.com - Main API -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">api.aladhan.com</domain>
+        <domain includeSubdomains="true">aladhan.com</domain>
+        <trust-anchors>
+            <!-- Trust system CAs -->
+            <certificates src="system" />
+        </trust-anchors>
+        <!-- Allow pinning jika diperlukan -->
+        <pin-set expiration="2026-12-31">
+            <!-- Public pins untuk aladhan -->
+        </pin-set>
+    </domain-config>
+
+    <!-- Default config untuk domain lain - Trust system CAs -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">.com</domain>
+        <domain includeSubdomains="true">.co.id</domain>
+        <domain includeSubdomains="true">.id</domain>
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </domain-config>
+
+    <!-- Debug overrides untuk development/testing -->
+    <debug-overrides>
+        <trust-anchors>
+            <!-- Trust system CAs -->
+            <certificates src="system" />
+            <!-- Trust user-installed CAs (untuk proxy debugging) -->
+            <certificates src="user" />
+        </trust-anchors>
+    </debug-overrides>
+</network-security-config>

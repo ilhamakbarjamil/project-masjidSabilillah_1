@@ -32,7 +32,9 @@ class _AnnouncementListViewState extends State<AnnouncementListView> {
     final t = title.toLowerCase();
     final c = content.toLowerCase();
     return t.contains('ramadhan') || t.contains('tarawih') || t.contains('buka') || 
-           t.contains('sahur') || t.contains('zakat') || t.contains('fitrah');
+           t.contains('sahur') || t.contains('zakat') || t.contains('fitrah') ||
+           c.contains('ramadhan') || c.contains('tarawih') || c.contains('buka') || 
+           c.contains('sahur') || c.contains('zakat') || c.contains('fitrah');
   }
 
   Widget _buildRamadanHeader() {

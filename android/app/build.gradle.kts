@@ -44,6 +44,17 @@ android {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
+            
+            // Disable shrinking and obfuscation untuk network libraries
+            // agar HTTP requests berfungsi dengan baik di release mode
+            isMinifyEnabled = false
+            isShrinkResources = false
+            
+            // If you enable minification, use proguard rules
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
 }

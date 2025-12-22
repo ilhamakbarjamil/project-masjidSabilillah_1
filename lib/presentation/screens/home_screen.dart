@@ -101,15 +101,22 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
   Future<void> _loadPrayerTimes() async {
     try {
+      debugPrint('[HomeScreen] 🌐 Loading prayer times for city: $_selectedCity');
+      
       final prayerTimes = await ApiService().getPrayerTimes(city: _selectedCity);
+      
       if (mounted) {
         setState(() {
           _todayPrayerTimes = prayerTimes;
           _updateNextPrayer();
         });
+        debugPrint('[HomeScreen] ✅ Prayer times loaded successfully');
       }
     } catch (e) {
-      debugPrint('Error loading prayer times: $e');
+      debugPrint('[HomeScreen] ❌ Error loading prayer times: $e');
+      // Sengaja tidak set error state di home screen
+      // User akan tetap melihat UI tanpa error banner
+      // Data akan otomatis load lagi saat ke Jadwal Sholat screen
     }
   }
 
